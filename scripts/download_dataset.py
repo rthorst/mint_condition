@@ -3,42 +3,42 @@ import os
 import requests
 import time 
 from bs4 import BeautifulSoup
+import itertools
+import random 
 
-"""
-Stopped: 
-There is a bug in the HTML stopping records from writing as proper JSON
-I think the backslashes are the problem.
-
-
-"""
 
 def download_beckett_htmls():
     """
     Download raw HTML of beckett baseball card pages
     """
 
-    base_url = "https://marketplace.beckett.com/search_new/?sport=185223&rowNum=250&page="
+    base_url = "https://marketplace.beckett.com/search_new/?sport=185223&rowNum=250"
+    page_nums = range(1, 11)
+    conditions = ["NM", "MINT", "EX", "VG", "GOOD", "FAIR", "POOR"]
     
     for page_num in range(1, 11):
+        for condition in conditions: 
 
-        # Download page.
-        url = base_url + str(page_num)
+            # Download page.
+            url = "{}&page={}&condition_id={}".format(base_url, page_num, condition)
+            print(url)
+            import time
 
-        # Get text.
-        resp = requests.get(url)
-        text = resp.text
+            # Get text.
+            resp = requests.get(url)
+            text = resp.text
 
-        # Save.
-        fname = "baseball_p{}.html".format(page_num)
-        of_p = os.path.join("..", "data", "htmls", fname)
-        with open(of_p, "w", newline="") as of:
-            of.write(text)
-        print(fname)
+            # Save.
+            fname = "baseball_p{}_condition{}.html".format(page_num, condition)
+            of_p = os.path.join("..", "data", "htmls", fname)
+            with open(of_p, "w", newline="") as of:
+                of.write(text)
+            print(fname)
 
-        # Sleep to be nice.
-        time.sleep(1)
+            # Sleep to be nice.
+            time.sleep(1)
 
-def extract_html_of_individual_records():
+def extract_individual_records():
     """ 
     Extract individual records, currently image URL and condition.
     Create data/individual_records.jsonl
@@ -51,66 +51,52 @@ def extract_html_of_individual_records():
 
     # Iterate over input files.
     data_p = os.path.join("..", "data", "htmls")
-    for html_fname in os.listdir(data_p):
+    html_fnames = os.listdir(data_p)
+    random.shuffle(html_fnames)
+    for html_fname in html_fnames:
 
         # Load HTML.
         print(html_fname)
         html_filepath = os.path.join(data_p, html_fname)
         html = open(html_filepath).read()
-    
+
+        # Extract condition from the filename.
+        # Note that before I had to extract it from mpl5-span-title.
+        condition = html_fname.rstrip(".html").split("_")[-1]
+        condition = condition.lstrip("condition")
+        print(condition)
+
         # Cast HTML to beautiful soup object.
         soup = BeautifulSoup(html, "html.parser")
 
-        # List all mpl2 and mpl5 tags.
-        mpl2s = soup.findAll("li", {"class" : "mpL2"})
-        mpl5s = soup.findAll("li", {"class" : "mpL5"})
+        # List all mpl2 tags which contain the image URLs.
+        mpl2s = soup.findAll("li", {"class" : "mpL2"}) # contains image
         assert len(mpl2s) == 250
-        assert len(mpl5s) == 250
 
         # Write output.
-        for mpl2_tag, mpl5_tag in zip(mpl2s, mpl5s):
+        for mpl2_tag in mpl2s:
 
-            out = json.dumps({
-                "img_html" : remove_slashes(str(mpl2_tag)),
-                "condition_html" : remove_slashes(str(mpl5_tag)),
-            })
-            of.write(json.dumps(out) + "\n")
+            try:
+
+                # Get image URL
+                img_tag = mpl2_tag.findChildren("img")[0]
+                img_url = img_tag["data-original"]
+
+                # Write.
+                out = json.dumps({
+                    "image_url" : img_url,
+                    "img_grade" : condition # same for every img in file
+                })
+                of.write(out + "\n")
+
+            except Exception as e:
+
+                print(e)
 
     # Done.
     of.flush()
     of.close()
     print("Done, wrote {}".format(of_p))
-
-def remove_slashes(s):
-    """ helper function to remove slashes """
-
-    s = s.replace("/", "")
-    s = s.replace("\\", "")
-    return s
-
-def extract_url_and_condition_from_individual_records():
-    """
-    Create a dataset of image URL and condition.
-    """
-
-    # Load input file.
-    in_p = os.path.join("..", "data", "individual_records.jsonl")
-    print("read {}".format(in_p))
-    rows = open(in_p, "r").readlines()
-
-    # Create output file.
-    of_p = os.path.join("..", "data", "clean_individual_records.jsonl")
-    of = open(of_p, "w", newline="")
-
-    # Clean each line, extracting image URL and condition.
-    for row in rows:
-
-        # Get image url.
-        j = json.loads(row)
-        print(j)
-        img_soup = BeautifulSoup(j["img_html"])
-        img_url = soup.find("image", {"li" : "data-original"})
-        print(img_url)
 
 """
 image.
@@ -122,7 +108,7 @@ li title
 """
 
 if __name__ == "__main__":
+    
     #download_beckett_htmls()
-    extract_html_of_individual_records()    
-    extract_url_and_condition_from_individual_records()
+    extract_individual_records()    
 
