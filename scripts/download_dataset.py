@@ -12,31 +12,38 @@ def download_beckett_htmls():
     Download raw HTML of beckett baseball card pages
     """
 
-    base_url = "https://marketplace.beckett.com/search_new/?sport=185223&rowNum=250"
+    base_url = "https://marketplace.beckett.com/search_new/?rowNum=250"
     page_nums = range(11, 51)
     conditions = ["NM", "MINT", "EX", "VG", "GOOD", "FAIR", "POOR"]
+    sports = [
+        185223, #baseball
+        185226, #basketball
+        185224, #football
+        185225  #hockey
+    ]    
     
     for page_num in page_nums:
         for condition in conditions: 
+            for sport in sports:
 
-            # Download page.
-            url = "{}&page={}&condition_id={}".format(base_url, page_num, condition)
-            print(url)
-            import time
+                # Download page.
+                url = "{}&page={}&condition_id={}&sport={}".format(base_url, page_num, condition, sport)
+                print(url)
+                import time
 
-            # Get text.
-            resp = requests.get(url)
-            text = resp.text
+                # Get text.
+                resp = requests.get(url)
+                text = resp.text
 
-            # Save.
-            fname = "baseball_p{}_condition{}.html".format(page_num, condition)
-            of_p = os.path.join("..", "data", "htmls", fname)
-            with open(of_p, "w", newline="") as of:
-                of.write(text)
-            print(fname)
+                # Save.
+                fname = "{}_p{}_condition{}.html".format(sport, page_num, condition)
+                of_p = os.path.join("..", "data", "htmls", fname)
+                with open(of_p, "w", newline="") as of:
+                    of.write(text)
+                print(fname)
 
-            # Sleep to be nice.
-            time.sleep(1)
+                # Sleep to be nice.
+                time.sleep(1)
 
 def extract_individual_records():
     """ 
@@ -68,6 +75,9 @@ def extract_individual_records():
         condition = condition.lstrip("condition")
         print(condition)
 
+        # Extract sport from the filename.
+        sport = html_fname.split("_")[0]
+
         # Cast HTML to beautiful soup object.
         soup = BeautifulSoup(html, "html.parser")
 
@@ -87,7 +97,8 @@ def extract_individual_records():
                 out = json.dumps({
                     "id" : id, # unique numerical ID
                     "image_url" : img_url,
-                    "condition" : condition # same for every img in file
+                    "condition" : condition, # same for every img in file
+                    "sport" : sport
                 })
                 of.write(out + "\n")
 
@@ -175,9 +186,10 @@ def download_images():
         img_url = j["image_url"]
         id = j["id"]
         condition = j["condition"]
+        sport = j["sport"]
 
         # designate output file path.
-        fname = "{}_{}.jpg".format(id, condition)
+        fname = "{}_sport{}_condition{}.jpg".format(id, sport, condition)
         of_p = os.path.join("..", "data", "imgs", condition, fname)
 
         # download image.
@@ -200,6 +212,6 @@ if __name__ == "__main__":
     
     #download_beckett_htmls()
     #extract_individual_records()    
-    clean_individual_records()
-    download_images()
+    #clean_individual_records()
+    #download_images()
 
