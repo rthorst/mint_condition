@@ -1,0 +1,35 @@
+==== High level architecture ===
+- predict grade.
+- predict price? people want this.
+
+===== Datasets of graded trading cards =======
+Ebay has LOADS of trading cards. E.g. "sports trading cards" cateogory --
+single has 14 million cards.
+    Can filter by grade with usually 40m000+ examples per class 0-10.
+
+    Finding API: 5,000 calls/day.
+        - can refine by category, etc.
+
+Craigslist is difficult. Requires natural language text filtering and lots of junk pictures -- e.g. a whole set.
+
+COMC (comc.com/Cards/baseball) / PWCC (pwccmarketplace.com)
+1.6 million cards with labels usually in title.
+    Roberto Clemente [PSA 7 NM]
+    Giancarlo Stanton [BGS 9.5 GEM Mint]
+
+   Unclear if I can scrape. Disallows a lot but /card/ looks like I can scrape.
+
+
+Beckett.com
+
+    I think I can scrape. Disallows some stuff. But
+    1.4 million unique items.
+
+    search_new is OK
+    /images/ is OK
+
+====== Miscellaneous resources =============
+
+======== Other collectibles to think about =======
+
+
