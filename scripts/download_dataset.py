@@ -58,7 +58,7 @@ def extract_individual_records():
     for html_fname in html_fnames:
 
         # Load HTML.
-        print(html_fname)
+        print("extract records from {}".format(html_fname))
         html_filepath = os.path.join(data_p, html_fname)
         html = open(html_filepath).read()
 
@@ -73,10 +73,6 @@ def extract_individual_records():
 
         # List all mpl2 tags which contain the image URLs.
         mpl2s = soup.findAll("li", {"class" : "mpL2"}) # contains image
-        try:
-            assert len(mpl2s) == 250
-        except:
-            print("NOT 250 records!!, have {}".format(len(mpl2s)))
 
         # Write output.
         for mpl2_tag in mpl2s:
@@ -111,6 +107,10 @@ def clean_individual_records():
     """
     Clean individual records -- currently, skip images with no-image
     placeholder image.
+
+    Also skip stock photos (with items_stock in the filepath) which
+    are the vast majority.
+
     """
 
     print("clean individual records -- remove images with no-image placeholder")
@@ -126,20 +126,28 @@ def clean_individual_records():
     of = open(of_p, "w", newline="")
 
     print("clean and write")
-    n_rows_removed = 0
+    missing_images_skipped = 0 # skip if no-image
+    stock_photos_skipped = 0 # skip if stock image.
+    images_wrote = 0 # images not skipped -> successfully wrote.
     for j in js:
 
-        if not "no-image.jpg" in j["image_url"]:
-            #assert ".jpg" in j["image_url"] # make sure JPG
-            of.write(json.dumps(j) + "\n")
+        if "no-image.jpg" in j["image_url"]:
+            missing_images_skipped += 1
+
+        elif "items_stock" in j["image_url"]:
+            stock_photos_skipped += 1
+
         else:
-            n_rows_removed += 1
-    
+            of.write(json.dumps(j) + "\n")
+            images_wrote += 1
     # done.
     of.flush()
     of.close()
-    print("done, wrote cleaned_individual_records.jsonl")
-    print("removed {} rows with no image".format(n_rows_removed))
+    msg = """
+    Done. Ignored {} missing images and {} stock photos.
+    Wrote {} total photos.
+    """.format(missing_images_skipped, stock_photos_skipped, images_wrote)
+    print(msg)
 
 def download_images():
     """
@@ -163,8 +171,6 @@ def download_images():
     print("get images")
     for idx, j in enumerate(js):
 
-        print(js)
-
         # get url, id, condition.
         img_url = j["image_url"]
         id = j["id"]
@@ -172,13 +178,13 @@ def download_images():
 
         # designate output file path.
         fname = "{}_{}.jpg".format(id, condition)
-        of_p = os.path.join("..", "data", "imgs", fname)
+        of_p = os.path.join("..", "data", "imgs", condition, fname)
 
         # download image.
         try:
-            resp = requests.get(img_url)
-            with open(of_p, "w") as of:
-                shutil.copyfileobj(resp.raw, of)
+            resp = requests.get(img_url).content
+            with open(of_p, "wb") as of:
+                of.write(resp)
 
         except Exception as e:
             print(e, img_url)
@@ -187,13 +193,13 @@ def download_images():
         time.sleep(1)
 
         # counter.
-        if idx % 100 == 0:
+        if idx % 10 == 0:
             print(idx)
 
 if __name__ == "__main__":
     
     #download_beckett_htmls()
     #extract_individual_records()    
-    #clean_individual_records()
+    clean_individual_records()
     download_images()
 
