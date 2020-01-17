@@ -186,7 +186,7 @@ def download_images(start_at_idx=0):
 
         # check if we need to skip this index because already processed.
         if idx < start_at_idx:
-            msg = "skip {} because already crawled"
+            msg = "skip {} because already crawled".format(idx)
             print(msg)
             continue
 
@@ -210,16 +210,20 @@ def download_images(start_at_idx=0):
             print(e, img_url)
 
         # sleep 1s to be nice.
-        time.sleep(1)
+        time.sleep(0.2)
 
         # counter.
         if idx % 10 == 0:
             print(idx)
 
 if __name__ == "__main__":
+
+    print("!!!!")
+    print("Stop!!!! This can overwrite lots of data. Pausing 60s")
+    time.sleep(60)
     
-    download_beckett_htmls()
-    extract_individual_records()    
-    clean_individual_records()
-    download_images()
+    #download_beckett_htmls()
+    #extract_individual_records()    
+    #clean_individual_records()
+    download_images(start_at_idx=6820)
 
