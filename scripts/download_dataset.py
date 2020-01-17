@@ -13,7 +13,7 @@ def download_beckett_htmls():
     """
 
     base_url = "https://marketplace.beckett.com/search_new/?rowNum=250"
-    page_nums = range(11, 51)
+    page_nums = range(1, 51)
     conditions = ["NM", "MINT", "EX", "VG", "GOOD", "FAIR", "POOR"]
     sports = [
         185223, #baseball
@@ -160,10 +160,12 @@ def clean_individual_records():
     """.format(missing_images_skipped, stock_photos_skipped, images_wrote)
     print(msg)
 
-def download_images():
+def download_images(start_at_idx=0):
     """
     For each record in cleaned_individual_records.jsonl, download the associated image.
     It should be saved in data/{condition}/id_condition.jpg
+
+    Start_at_idx (int) :: used to resume scraping from idx > 0.
     """
 
     # make 1 directory per conditin to hold images.
@@ -181,6 +183,12 @@ def download_images():
     # get images.
     print("get images")
     for idx, j in enumerate(js):
+
+        # check if we need to skip this index because already processed.
+        if idx < start_at_idx:
+            msg = "skip {} because already crawled"
+            print(msg)
+            continue
 
         # get url, id, condition.
         img_url = j["image_url"]
@@ -210,8 +218,8 @@ def download_images():
 
 if __name__ == "__main__":
     
-    #download_beckett_htmls()
-    #extract_individual_records()    
-    #clean_individual_records()
-    #download_images()
+    download_beckett_htmls()
+    extract_individual_records()    
+    clean_individual_records()
+    download_images()
 
