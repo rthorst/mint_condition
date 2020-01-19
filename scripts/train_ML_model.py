@@ -28,8 +28,8 @@ import numpy as np
 import os
 import pickle 
 import torch
+from torchvision import transforms
 from torch.utils import data 
-from torch import transforms 
 
 def split_train_test(test_size = 0.1):
     """
@@ -133,7 +133,7 @@ class Dataset(data.Dataset):
         file_p = os.path.join(base_p, ID)
         X_np = np.load(file_p)
         X_np = np.reshape(X_np, (3, 255, 255))
-        print(X_np.shape)
+
         X = torch.from_numpy(X_np)
         y = self.labels[ID]
 
@@ -150,18 +150,21 @@ def train_CNN_model():
     print("check if CUDA can be used -> {}".format(use_cuda))
     device = torch.device("cuda:0" if use_cuda else "cpu")
 
-    # Define a normalization transform, which is necessary for 
-    # The pretrained AlexNet. The specific parameters are necessary
-    # for AlexNet.
+    # Define transformations of the images.
+    # Note that the normalization transform with these specific
+    # Parameters is necessary for working with pretrained AlexNet.    
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
+    img_transforms = transforms.Compose([
+        transforms.ToTensor(),
+        normalize
+    ])
 
     # Parameters
     params = {
         "batch_size" : 64,
         "shuffle" : True,
-        "num_workers" : 4,
-        "transform" : normalize
+        "num_workers" : 4
     }
     max_epochs = 100
 
@@ -192,6 +195,9 @@ def train_CNN_model():
         # Train.
         for local_batch, local_labels in train_g:
 
+            # Normalize images.
+            local_batch = img_transforms(local_batch)
+
             # Transfer to GPU if available.
             local_batch = local_batch.to(device)
             local_labels = local_labels.to(device)
@@ -199,9 +205,6 @@ def train_CNN_model():
             """
             Model computations. TODO fill me out.
             """
-
-
-            # Normalize data, a requirement for pretrained alexnet
 
             # Counter.
             batch_num += 1
@@ -213,6 +216,8 @@ def train_CNN_model():
 
             for local_batch, local_labels in test_g:
 
+                # Normalize images.
+                local_batch = img_transforms(local_batch)
 
                 # Transfer to GPU if available.
                 local_batch = local_batch.to(device)
