@@ -27,8 +27,8 @@ def preprocess_img(PIL_object, output_shape=(255, 255, 3)):
 
     # Scale to final shape, for example (255, 255, 3)
     (new_width, new_height, new_channels) = output_shape
-    #PIL_object = ImageOps.fit(PIL_object, (new_width, new_height), method=Image.ANTIALIAS)
     PIL_object = PIL_object.resize((new_width, new_height), Image.ANTIALIAS)
+
     # Return new image as numpy array.
     return np.array(PIL_object)
 
@@ -76,8 +76,14 @@ def create_dataset_wrapper():
             # Preprocess.
             # Rotate if needed.
             # Scale.
+            # Reshape to (3, 255, 255)
             # Cast to numpy arary.
             img_mtx = preprocess_img(img, final_img_shape)
+
+            # Ignore improperly shaped images, usually, due to graysale thus no color channel.
+            if img_mtx.shape != final_img_shape:
+                print("skip image with improper finals shape {}".format(img_max.shape))
+                continue
 
             # Write output.
             base_p = os.path.join("..", "data", "preprocessed_imgs")
