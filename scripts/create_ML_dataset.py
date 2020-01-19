@@ -28,7 +28,6 @@ def preprocess_img(PIL_object, output_shape=(255, 255, 3)):
     # Scale to final shape, for example (255, 255, 3)
     (new_width, new_height, new_channels) = output_shape
     PIL_object = PIL_object.resize((new_width, new_height), Image.ANTIALIAS)
-
     # Return new image as numpy array.
     return np.array(PIL_object)
 

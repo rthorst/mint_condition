@@ -131,11 +131,15 @@ class Dataset(data.Dataset):
         # Load data and get label.
         base_p = os.path.join("..", "data", "preprocessed_imgs")
         file_p = os.path.join(base_p, ID)
-        X_np = np.load(file_p)
-        X_np = np.reshape(X_np, (3, 255, 255))
-
-        X = torch.from_numpy(X_np)
+        X = np.load(file_p)
+        X = torch.from_numpy(X).float()
+        X = np.reshape(X, (3, 255, 255))
         y = self.labels[ID]
+
+        # Normalize.
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+        X = normalize(X)
 
         return X, y
 
@@ -156,7 +160,6 @@ def train_CNN_model():
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
     img_transforms = transforms.Compose([
-        transforms.ToTensor(),
         normalize
     ])
 
@@ -195,9 +198,6 @@ def train_CNN_model():
         # Train.
         for local_batch, local_labels in train_g:
 
-            # Normalize images.
-            local_batch = img_transforms(local_batch)
-
             # Transfer to GPU if available.
             local_batch = local_batch.to(device)
             local_labels = local_labels.to(device)
@@ -215,9 +215,6 @@ def train_CNN_model():
         with torch.set_grad_enabled(False):
 
             for local_batch, local_labels in test_g:
-
-                # Normalize images.
-                local_batch = img_transforms(local_batch)
 
                 # Transfer to GPU if available.
                 local_batch = local_batch.to(device)
