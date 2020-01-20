@@ -23,6 +23,7 @@ Cheat Sheet for streaming data: (really good)
 https://stanford.edu/~shervine/blog/pytorch-how-to-generate-data-parallel
 
 """
+import csv
 from sklearn.model_selection import train_test_split
 import copy
 import time
@@ -259,6 +260,13 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
+    # Initiailize a file to track accuracy over epochs.
+    acc_of_p = os.path.join("..", "data", "model_accuracy.csv")
+    acc_of = open(acc_of_p, "w", newline="")
+    header = ["epoch", "phase", "accuracy"]
+    w = csv.writer(acc_of)
+    w.writerow(header)
+
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -318,8 +326,8 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                     incorrect = float(torch.sum(preds != labels.data))
                     perc_correct = 100 * correct / (correct + incorrect)
                     msg = """
-                    batch {} : percent correct {}
-                    """.format(batch_num, perc_correct)
+                    epoch {} batch {} : percent correct {}
+                    """.format(epoch, batch_num, perc_correct)
                     print(msg)
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
@@ -334,24 +342,40 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
             if phase == 'val':
                 val_acc_history.append(epoch_acc)
 
+            # Write latest train and test accuracies to output file.
+            out = [epoch, phase, epoch_acc.numpy()]
+            w.writerow(out)
+            acc_of.flush()
+
         # Pickle the model after end of epoch.
         of_p = os.path.join("..", "models", "latest_model.p")
         with open(of_p, "wb") as of:
             pickle.dump(model, of)
         print("wrote {}".format(of_p))
 
+
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
+
+    # close output file.
+    of.flush()
+    of.close()
+    print("wrote {}".format(acc_of_p))
 
     # load best model weights
     model.load_state_dict(best_model_wts)
     return model, val_acc_history
 
 
-def train_CNN_model(num_classes=7):
+def train_CNN_model(num_classes=7, load_latest_model=False):
     """
     Train a CNN to classify card pictures.
+
+    Parameters:
+    --------
+    num_classes (int) : controls # of output neurons.
+    load_latest_model (boolean) : if True load models/latest_model.p
     """ 
 
     # Use CUDA if available.
@@ -396,12 +420,17 @@ def train_CNN_model(num_classes=7):
     # Replace top layer with a layer of (num_classes) outputs
     # Note that setting feature_extract to False means we fine-tune
     # the whole model, True we finetune only top layer.
-    model, _ = initialize_model(
-        model_name = "alexnet",
-        num_classes = num_classes,
-        feature_extract = True, # if True only finetune top layer.
-        use_pretrained = True
-    )
+    if load_latest_model:
+        print("load pickled latest_model.p")
+        model_p = os.path.join("..", "models", "latest_model.p")
+        model = pickle.load(open(model_p, "rb"))
+    else:
+        model, _ = initialize_model(
+            model_name = "alexnet",
+            num_classes = num_classes,
+            feature_extract = True, # if True only finetune top layer.
+            use_pretrained = True
+        )
     model.to(device)
 
     # Initialize optimizer, loss criterion.
@@ -435,4 +464,4 @@ def train_CNN_model(num_classes=7):
 if __name__ == "__main__":
 
     split_train_test()
-    train_CNN_model()
+    train_CNN_model(load_latest_model=True)
