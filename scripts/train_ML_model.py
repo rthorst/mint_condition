@@ -23,6 +23,9 @@ Cheat Sheet for streaming data: (really good)
 https://stanford.edu/~shervine/blog/pytorch-how-to-generate-data-parallel
 
 """
+
+import boto3
+from scipy.stats import spearmanr
 import random
 import csv
 from sklearn.model_selection import train_test_split
@@ -75,7 +78,7 @@ def split_train_test(test_size = 0.1):
         dir_p = os.path.join(base_p, dir_name)
         for img_fname in os.listdir(dir_p):
 
-            img_p = os.path.join(dir_p, img_fname)
+            img_p = os.path.join(dir_name, img_fname)
             img_ps.append(img_p)
     random.shuffle(img_ps)
 
@@ -144,8 +147,26 @@ class Dataset(data.Dataset):
         self.labels = labels # dictionary. key=fname, value=integer lbl.
         self.list_IDs = list_IDs # list of filenames.
 
+        # Initialize AWS storage (s3) resource.
+        self.s3_resource = boto3.resource("s3")
+
     def __len__(self):
         return len(self.list_IDs)
+
+    def download_from_s3(self, fname):
+        # download fname from s3 as "img.jpg"
+
+        # clear old "img.jpg" if exists.
+        if os.path.exists("img.jpg"):
+            os.remove("img.jpg")
+    
+        # download image from S3 as "img.jpg"
+        resp = self.s3_resource.Object(
+            "mintcondition",
+            fname
+        ).download_file("img.jpg")
+
+        return None
 
     def __getitem__(self, index):
 
@@ -157,8 +178,13 @@ class Dataset(data.Dataset):
             # Get label.
             y = self.labels[img_p]
 
+            # Download image from S3 instance and save as "tmp.jpg"
+            self.download_from_s3(img_p)
+
             # Load image and reshape to (3, 255, 255)
-            img = Image.open(img_p)
+            img = Image.open("img.jpg")
+            import time
+            time.sleep(2)
             img = img.resize((255, 255), Image.ANTIALIAS)
 
             # Cast to torch tensor.
@@ -353,6 +379,10 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                     print(preds)
                     print(labels.data)
 
+                    # rank correlation of predicted, actual.
+                    rho, p = spearmanr(preds.numpy(), labels.data.numpy())
+                    print("correlation of pred, actual: rho = {:.4f}".format(rho))
+
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
 
@@ -451,7 +481,7 @@ def train_CNN_model(num_classes=7, load_latest_model=False):
         model, _ = initialize_model(
             model_name = "alexnet",
             num_classes = num_classes,
-            feature_extract = True, # if True only finetune top layer.
+            feature_extract = False, # if True only finetune top layer.
             use_pretrained = True
         )
     model.to(device)
@@ -487,4 +517,4 @@ def train_CNN_model(num_classes=7, load_latest_model=False):
 if __name__ == "__main__":
 
     split_train_test()
-    train_CNN_model(load_latest_model=False, num_classes=5)
+    train_CNN_model(load_latest_model=True, num_classes=5)
