@@ -36,6 +36,7 @@ from torchvision import transforms
 import torchvision.models as models
 from torch.utils import data 
 import matplotlib.pyplot as plt
+from PIL import Image
 
 def split_train_test(test_size = 0.1):
     """
@@ -66,24 +67,36 @@ def split_train_test(test_size = 0.1):
         os.mkdir(partition_p)
 
     # List all input filenames and shuffle.
-    print("list input filenames")
-    preprocessed_p = os.path.join("..", "data", "preprocessed_imgs")
-    fnames = os.listdir(preprocessed_p)
-    random.shuffle(fnames)
+    base_p = os.path.join("..", "data", "imgs")
+    img_ps = [] # e.g. ../data/imgs/MINT/foo.jpg.
 
-    # Keep only baseball cards, for now.
+    for dir_name in os.listdir(base_p):
+
+        dir_p = os.path.join(base_p, dir_name)
+        for img_fname in os.listdir(dir_p):
+
+            img_p = os.path.join(dir_p, img_fname)
+            img_ps.append(img_p)
+    random.shuffle(img_ps)
+
+    # Keep only baseball cards in MINT or POOR condition, for now.
     print("Keep only baseball cards, for now")
     baseball_sport = "185223"
-    fnames = [fname for fname in fnames if baseball_sport in fname]
+    img_ps = [p for p in img_ps if baseball_sport in p]
+
+    # Keep only desired conditions.
+    print("Exclude good and fair cards to create a 9, 7, 5, 3, 1 scale")
+    img_ps = [p for p in img_ps if "GOOD" not in p and "FAIR" not in p]    
 
     # Train/test split.
     print("split train, test")
-    train_fnames, test_fnames = train_test_split(fnames, test_size=test_size)
+    train_ps, test_ps = train_test_split(img_ps, test_size=test_size)
+
     # Create partition dictionary.
     print("create partition object")
     partition = {
-        "train" : train_fnames,
-        "test"  : test_fnames
+        "train" : train_ps,
+        "test"  : test_ps
     }
 
     # Pickle partition object.
@@ -98,6 +111,7 @@ def split_train_test(test_size = 0.1):
 
     # Map all unique labels to integer IDs.
     # lbl_to_idx is a dictinary mapping e.g. "EX" -> 0, etc.
+    #str_labels = ["MINT", "NM", "EX", "VG", "GOOD", "FAIR", "POOR"]
     str_labels = ["MINT", "NM", "EX", "VG", "POOR"]
     lbl_to_idx = {lbl : i for i, lbl in enumerate(str_labels)}
 
@@ -105,14 +119,14 @@ def split_train_test(test_size = 0.1):
     # fname_to_lbl is a dictionary mapping e.g. "some_fname.npy" -> 2
     # Example filename.100097_sport185226_conditionVG_preprocessed.npy
     fname_to_lbl = {}
-    for fname in fnames:
+    for p in img_ps:
 
         # Extract label.
-        str_lbl = fname.split("_")[-2].lstrip("condition")
+        str_lbl = p.split("_")[-1].lstrip("condition").rstrip(".jpg")
         int_lbl = lbl_to_idx[str_lbl]
         
         # Add to dictionary.
-        fname_to_lbl[fname] = int_lbl
+        fname_to_lbl[p] = int_lbl
 
     # Pickle fname_to_lbl mapping.
     of_p = os.path.join(partition_p, "labels.p")
@@ -138,24 +152,24 @@ class Dataset(data.Dataset):
         try:
 
             # Select sample.
-            ID = self.list_IDs[index]
+            img_p = self.list_IDs[index]
 
             # Get label.
-            y = self.labels[ID]
+            y = self.labels[img_p]
 
-            # Load X and reshape to (n_channels, height, width)
-            base_p = os.path.join("..", "data", "preprocessed_imgs")
-            file_p = os.path.join(base_p, ID)
-            X = np.load(file_p)
-            X = torch.from_numpy(X).float()
-            X = np.reshape(X, (3, 255, 255))
+            # Load image and reshape to (3, 255, 255)
+            img = Image.open(img_p)
+            img = img.resize((255, 255), Image.ANTIALIAS)
 
-            # Normalize.
-            normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
-            X = normalize(X)
+            # Cast to torch tensor.
+            X = np.array(img) # (255, 255, 3) numpy
+            assert X.shape == (255, 255, 3)
+            X = X/255 # "normalize"
+            X = X.swapaxes(0, 2) # (3, 255, 255) numpy
+            X = torch.from_numpy(X).float() # (3, 255, 255) torch
 
         except Exception as e:
+            print(e)
             print("exception loading data..using random image, label instead")
             X = np.random.random((3, 255, 255))
             X = torch.from_numpy(X).float()
@@ -437,7 +451,7 @@ def train_CNN_model(num_classes=7, load_latest_model=False):
         model, _ = initialize_model(
             model_name = "alexnet",
             num_classes = num_classes,
-            feature_extract = False, # if True only finetune top layer.
+            feature_extract = True, # if True only finetune top layer.
             use_pretrained = True
         )
     model.to(device)
@@ -472,5 +486,5 @@ def train_CNN_model(num_classes=7, load_latest_model=False):
 
 if __name__ == "__main__":
 
-    #split_train_test()
-    train_CNN_model(load_latest_model=True, num_classes=5)
+    split_train_test()
+    train_CNN_model(load_latest_model=False, num_classes=5)
