@@ -23,6 +23,7 @@ Cheat Sheet for streaming data: (really good)
 https://stanford.edu/~shervine/blog/pytorch-how-to-generate-data-parallel
 
 """
+import random
 import csv
 from sklearn.model_selection import train_test_split
 import copy
@@ -34,6 +35,7 @@ import torch
 from torchvision import transforms
 import torchvision.models as models
 from torch.utils import data 
+import matplotlib.pyplot as plt
 
 def split_train_test(test_size = 0.1):
     """
@@ -63,10 +65,16 @@ def split_train_test(test_size = 0.1):
     if not os.path.exists(partition_p):
         os.mkdir(partition_p)
 
-    # List all input filenames.
+    # List all input filenames and shuffle.
     print("list input filenames")
     preprocessed_p = os.path.join("..", "data", "preprocessed_imgs")
     fnames = os.listdir(preprocessed_p)
+    random.shuffle(fnames)
+
+    # Keep only baseball cards, for now.
+    print("Keep only baseball cards, for now")
+    baseball_sport = "185223"
+    fnames = [fname for fname in fnames if baseball_sport in fname]
 
     # Train/test split.
     print("split train, test")
@@ -90,8 +98,7 @@ def split_train_test(test_size = 0.1):
 
     # Map all unique labels to integer IDs.
     # lbl_to_idx is a dictinary mapping e.g. "EX" -> 0, etc.
-    labels_p = os.path.join("..", "data", "imgs")
-    str_labels = os.listdir(labels_p)
+    str_labels = ["MINT", "NM", "EX", "VG", "POOR"]
     lbl_to_idx = {lbl : i for i, lbl in enumerate(str_labels)}
 
     # Create labels dictionary.
@@ -321,7 +328,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                 # counter.
                 batch_num += 1
 
-                if batch_num % 5 == 0:
+                if batch_num % 1 == 0:
                     correct = float(torch.sum(preds == labels.data))
                     incorrect = float(torch.sum(preds != labels.data))
                     perc_correct = 100 * correct / (correct + incorrect)
@@ -329,6 +336,8 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                     epoch {} batch {} : percent correct {}
                     """.format(epoch, batch_num, perc_correct)
                     print(msg)
+                    print(preds)
+                    print(labels.data)
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
@@ -428,7 +437,7 @@ def train_CNN_model(num_classes=7, load_latest_model=False):
         model, _ = initialize_model(
             model_name = "alexnet",
             num_classes = num_classes,
-            feature_extract = True, # if True only finetune top layer.
+            feature_extract = False, # if True only finetune top layer.
             use_pretrained = True
         )
     model.to(device)
@@ -463,5 +472,5 @@ def train_CNN_model(num_classes=7, load_latest_model=False):
 
 if __name__ == "__main__":
 
-    split_train_test()
-    train_CNN_model(load_latest_model=True)
+    #split_train_test()
+    train_CNN_model(load_latest_model=True, num_classes=5)

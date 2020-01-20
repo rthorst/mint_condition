@@ -46,6 +46,11 @@ def create_dataset_wrapper():
     base_p = os.path.join("..", "data", "imgs")
 
     for dir_name in os.listdir(base_p):
+
+        if dir_name not in ["MINT", "NM", "EX", "VG", "POOR"]:
+            print("skip {}".format(dir_name))
+            continue
+
         print("\t...{}".format(dir_name))
         dir_p = os.path.join(base_p, dir_name)
 
@@ -81,7 +86,7 @@ def create_dataset_wrapper():
 
             # Ignore improperly shaped images, usually, due to graysale thus no color channel.
             if img_mtx.shape != final_img_shape:
-                print("skip image with improper finals shape {}".format(img_max.shape))
+                print("skip image with improper finals shape {}".format(img_mtx.shape))
                 continue
 
             # Write output.
