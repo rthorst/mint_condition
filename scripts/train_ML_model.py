@@ -150,21 +150,28 @@ class Dataset(data.Dataset):
         # Initialize AWS storage (s3) resource.
         self.s3_resource = boto3.resource("s3")
 
+        # Make ML_images directory and subdirectories.
+        conditions = ["MINT", "NM", "EX", "VG", "FAIR", "GOOD", "POOR"]
+        base_p = os.path.join("..", "data", "ml_images")
+        if not os.path.exists(base_p):
+            os.mkdir(base_p)
+            for condition in conditions:
+                p = os.path.join(base_p, condition)
+                os.mkdir(p)
+
     def __len__(self):
         return len(self.list_IDs)
 
-    def download_from_s3(self, fname):
-        # download fname from s3 as "img.jpg"
+    def download_from_s3(self, remote_fname):
+        # download fname from s3 as ../data/ml_images/{REMOTE FNAME}
+        local_fname = os.path.join("..", "data", "ml_images", remote_fname)
+        print("download {}".format(remote_fname))
 
-        # clear old "img.jpg" if exists.
-        if os.path.exists("img.jpg"):
-            os.remove("img.jpg")
-    
         # download image from S3 as "img.jpg"
         resp = self.s3_resource.Object(
             "mintcondition",
-            fname
-        ).download_file("img.jpg")
+            remote_fname
+        ).download_file(local_fname)
 
         return None
 
@@ -173,18 +180,18 @@ class Dataset(data.Dataset):
         try:
 
             # Select sample.
-            img_p = self.list_IDs[index]
+            remote_p = self.list_IDs[index]
 
             # Get label.
-            y = self.labels[img_p]
+            y = self.labels[remote_p]
 
-            # Download image from S3 instance and save as "tmp.jpg"
-            self.download_from_s3(img_p)
+            # If the image does not exist locally, get it from S3.
+            local_p = os.path.join("..", "data", "ml_images", remote_p)
+            if not os.path.exists(local_p):
+                self.download_from_s3(remote_p)
 
             # Load image and reshape to (3, 255, 255)
-            img = Image.open("img.jpg")
-            import time
-            time.sleep(2)
+            img = Image.open(local_p)
             img = img.resize((255, 255), Image.ANTIALIAS)
 
             # Cast to torch tensor.
@@ -517,4 +524,4 @@ def train_CNN_model(num_classes=7, load_latest_model=False):
 if __name__ == "__main__":
 
     split_train_test()
-    train_CNN_model(load_latest_model=True, num_classes=5)
+    train_CNN_model(load_latest_model=False, num_classes=5)
