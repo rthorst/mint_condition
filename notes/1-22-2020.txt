@@ -1,0 +1,7 @@
+Todo today:
+
+Do a lot of EDA on my data, what does it look like?
+- What is class/sport distribution?
+- Visualize some random images.
+
+If I can understand the data, I can make a better model.

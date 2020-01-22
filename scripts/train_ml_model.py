@@ -19,6 +19,8 @@ import torchvision.models as models
 from torch.utils import data 
 import matplotlib.pyplot as plt
 from PIL import Image
+from sklearn.metrics import f1_score
+
 
 def split_train_test(test_size = 0.1):
     """
@@ -167,7 +169,10 @@ class Dataset(data.Dataset):
         self.labels = labels # dictionary. key=fname, value=integer lbl.
         self.list_IDs = list_IDs # list of filenames.
         self.apply_rotations = apply_rotations
-        self.rotation_fn = transforms.RandomRotation(90) # torch rotation function.
+        self.rotation_fn = transforms.Compose([
+            transforms.RandomAffine(degrees=90, shear=90)
+        ])
+        #self.rotation_fn = transforms.RandomRotation(90) # torch rotation function.
 
         # Initialize AWS storage (s3) resource.
         self.s3_resource = boto3.resource("s3")
@@ -223,7 +228,8 @@ class Dataset(data.Dataset):
             X = np.array(img) # (255, 255, 3) numpy
             assert X.shape == (255, 255, 3)
             X = X/255 # "normalize"
-            X = X.swapaxes(0, 2) # (3, 255, 255) numpy
+            X = X.swapaxes(1, 2) # (255, 3, 255)
+            X = X.swapaxes(0, 1) # (3, 255, 255) numpy
             X = torch.from_numpy(X).float() # (3, 255, 255) torch
     
 
@@ -357,7 +363,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
     # Initiailize a file to track accuracy over epochs.
     acc_of_p = os.path.join("..", "data", "model_accuracy.csv")
     acc_of = open(acc_of_p, "w", newline="")
-    header = ["epoch", "phase", "accuracy"]
+    header = ["epoch", "phase", "accuracy", "F"]
     w = csv.writer(acc_of)
     w.writerow(header)
 
@@ -374,6 +380,8 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
 
             running_loss = 0.0
             running_corrects = 0.0
+            ypreds = []
+            ytrues = []
 
             # Iterate over data.
             batch_num = 0
@@ -411,6 +419,9 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
+                F = f1_score(preds.numpy(), labels.data.numpy(), average="micro")
+                ypreds.extend(list(preds.numpy()))
+                ytrues.extend(list(labels.data.numpy()))
 
                 # counter.
                 batch_num += 1
@@ -420,8 +431,8 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                     incorrect = float(torch.sum(preds != labels.data))
                     perc_correct = 100 * correct / (correct + incorrect)
                     msg = """
-                    epoch {} batch {} : percent correct {}
-                    """.format(epoch, batch_num, perc_correct)
+                    epoch {} batch {} : percent correct={:.4f} F={:.4f}
+                    """.format(epoch, batch_num, perc_correct, F)
                     print(msg)
                     print(preds)
                     print(labels.data)
@@ -432,6 +443,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
+            epoch_F = f1_score(ypreds, ytrues, average="micro")
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
@@ -443,7 +455,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                 val_acc_history.append(epoch_acc)
 
             # Write latest train and test accuracies to output file.
-            out = [epoch, phase, epoch_acc.numpy()]
+            out = [epoch, phase, epoch_acc.numpy(), epoch_F]
             w.writerow(out)
             acc_of.flush()
 
