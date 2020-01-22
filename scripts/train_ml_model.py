@@ -1,27 +1,5 @@
 """
-https://pytorch.org/docs/stable/torchvision/models.html
-
-Images must be:
-   Shape (3, H, W) where H and W >= 224
-   Normalized to range (0, 1) and then normalized with 
-        mean = [0.485, 0.456, 0.406] 
-        std = [0.229, 0.224, 0.225]
-
-    You can use for normalizing in Pytorch:
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225])
-
-Pretrained AlexNet Model:
-torchvision.models.alexnet(pretrained=True, progress=True, **kwargs)
-
-Stream data:
-    torch.utils.data.DataLoader ; iterable over dataset.
-
-    dataset : IterableDataset object.
-
-Cheat Sheet for streaming data: (really good)
-https://stanford.edu/~shervine/blog/pytorch-how-to-generate-data-parallel
-
+Train convolutional neural network based on trading card images
 """
 
 import copy
@@ -170,12 +148,22 @@ def split_train_test(test_size = 0.1):
 
 
 class Dataset(data.Dataset):
-    """ Characterize an iterable dataset 
-        Modified from https://stanford.edu/~shervine/blog/pytorch-how-to-generate-data-parallel
+    """
+    Iterable Dataset class allowing streaming large datasets rather than loading into RAM.
+
+
+   Modified from https://stanford.edu/~shervine/blog/pytorch-how-to-generate-data-parallel
     """
 
     def __init__(self, list_IDs, labels, apply_rotations=False):
-        """ if apply_rotations = True then apply random rotations """
+        """
+        parameters
+        ----------
+        list_IDs (str []) file paths.
+        labels (str []) target labels.
+        apply_rotations (bool) : if True then randomly rotate images.
+            NOTE! This should be FALSE for testing data.
+        """
         self.labels = labels # dictionary. key=fname, value=integer lbl.
         self.list_IDs = list_IDs # list of filenames.
         self.apply_rotations = apply_rotations
@@ -251,9 +239,9 @@ class Dataset(data.Dataset):
 
 def set_parameter_requires_grad(model, feature_extracting):
     """
-    Helper function. If we are feature extracting, e.g. fine-tuning
-    only the top layer of a model, then set existing parameters in the
-    model to not return gradients.
+    Helper function to freeze layers when fine-tuning a model.
+    Sets all neurons except those in a top layer to not return gradient.
+
     From 
     https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tut    orial.html
     """
@@ -341,7 +329,21 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
 
 
 def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_inception=False, device="cpu"):
-    """ Helper function to train model in PyTorch
+    """ 
+
+    Helper function to train model in PyTorch
+
+    Parameters:
+    ----------
+    model (pytorch model object)
+    dataloaders (pytorch dataloader objects)
+    criterion (pytorch loss function)
+    optimizer (pytorch optimizer)
+    num_epochs (int)
+    is_inception (bool)
+    device (str) e.g. "cpu" or "gpu:0"
+
+    From
     https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tut    orial.html
     """
 
@@ -466,14 +468,16 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
     return model, val_acc_history
 
 
-def train_CNN_model(num_classes=7, load_latest_model=False):
+def train_CNN_model(num_classes=5, load_latest_model=False):
     """
     Train a CNN to classify card pictures.
 
     Parameters:
     --------
     num_classes (int) : controls # of output neurons.
-    load_latest_model (boolean) : if True load models/latest_model.p
+    load_latest_model (boolean) : 
+        if True then use latest model from models/latest_model.p      
+        if False then start with a pretrained ImageNet model.
     """ 
 
     # Use CUDA if available.
