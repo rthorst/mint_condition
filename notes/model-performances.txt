@@ -10,4 +10,6 @@ All sports. Remove missing images. ResNet18
     Accuracy 62.38% and may be better , I only gave it 10 epochs.
     May gain a percentage or two with more training
 
-
+Running Wednesday in cloud: ResNet with more rotations,
+more epochs (15) and better reshaping to preserve X, Y axis order.
+Note that the train_ml_model function locally is slightly more up to date.

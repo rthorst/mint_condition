@@ -202,6 +202,38 @@ class Dataset(data.Dataset):
 
         return None
 
+    def load_and_preprocess_img(self, img_p, apply_rotations=False):
+        """ load and preprocess img, optionally applying rotations 
+
+        parameters:
+        -----------
+        img_p (str)  path to image.
+        apply_rotations (bool) if True apply rotations to the image.    
+                                should be false to all testing.
+
+        returns:
+        --------
+        X  (torch tensor) Image as torch tensor of shape (3, 255, 255)
+        """
+
+        # Load image and reshape to (3, 255, 255)
+        img = Image.open(img_p)
+        img = img.resize((255, 255), Image.ANTIALIAS)
+
+        # optionally rotate.
+        if apply_rotations:
+            img = self.rotation_fn(img)
+
+        # Cast to torch tensor.
+        X = np.array(img) # (255, 255, 3) numpy
+        assert X.shape == (255, 255, 3)
+        X = X/255 # "normalize"
+        X = X.swapaxes(1, 2) # (255, 3, 255)
+        X = X.swapaxes(0, 1) # (3, 255, 255) numpy
+        X = torch.from_numpy(X).float() # (3, 255, 255) torch
+
+        return X
+
     def __getitem__(self, index):
 
         try:
@@ -217,21 +249,8 @@ class Dataset(data.Dataset):
             if not os.path.exists(local_p):
                 self.download_from_s3(remote_p)
 
-            # Load image and reshape to (3, 255, 255)
-            img = Image.open(local_p)
-            img = img.resize((255, 255), Image.ANTIALIAS)
-            # optionally rotate.
-            if self.apply_rotations:
-                img = self.rotation_fn(img)
-
-            # Cast to torch tensor.
-            X = np.array(img) # (255, 255, 3) numpy
-            assert X.shape == (255, 255, 3)
-            X = X/255 # "normalize"
-            X = X.swapaxes(1, 2) # (255, 3, 255)
-            X = X.swapaxes(0, 1) # (3, 255, 255) numpy
-            X = torch.from_numpy(X).float() # (3, 255, 255) torch
-    
+            # Load image and reshape to torch tensor of shape (3, 255, 255)
+            X = self.load_and_preprocess_img(local_p, apply_rotations=self.apply_rotations) # torch tensor.
 
         except Exception as e:
             print(e)
