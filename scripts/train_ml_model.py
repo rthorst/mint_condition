@@ -20,7 +20,7 @@ from torch.utils import data
 import matplotlib.pyplot as plt
 from PIL import Image
 from sklearn.metrics import f1_score
-
+from scipy.stats import pearsonr
 
 def split_train_test(test_size = 0.1):
     """
@@ -382,7 +382,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
     # Initiailize a file to track accuracy over epochs.
     acc_of_p = os.path.join("..", "data", "model_accuracy.csv")
     acc_of = open(acc_of_p, "w", newline="")
-    header = ["epoch", "phase", "accuracy", "F"]
+    header = ["epoch", "phase", "accuracy", "F", "r"]
     w = csv.writer(acc_of)
     w.writerow(header)
 
@@ -463,6 +463,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
             epoch_F = f1_score(ypreds, ytrues, average="micro")
+            epoch_R = pearsonr(ypreds, ytrues)[0]
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
@@ -474,7 +475,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                 val_acc_history.append(epoch_acc)
 
             # Write latest train and test accuracies to output file.
-            out = [epoch, phase, epoch_acc.numpy(), epoch_F]
+            out = [epoch, phase, epoch_acc.numpy(), epoch_F, epoch_R]
             w.writerow(out)
             acc_of.flush()
 
