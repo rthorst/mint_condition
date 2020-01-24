@@ -2,6 +2,7 @@
 Train convolutional neural network based on trading card images
 """
 
+import seaborn as sns
 import copy
 import boto3
 from scipy.stats import spearmanr
@@ -21,6 +22,8 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from sklearn.metrics import f1_score
 from scipy.stats import pearsonr
+from flashtorch.saliency import Backprop, GradientAscent
+from scipy.ndimage.filters import gaussian_filter
 
 def split_train_test(test_size = 0.1):
     """
@@ -273,6 +276,15 @@ def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
         for param in model.parameters():
             param.requires_grad = False
+
+
+def reenable_gradients(model):
+    """
+    Helper function to re-enable gradients for all neurons in the model. 
+    Useful for saliency maps. Counterpart to set_parameter_requires_grad()
+    """
+    for param in model.parameters():
+        param.requires_grad = True
 
 def initialize_model(model_name, num_classes, feature_extract, use_pretrained=True):
 
@@ -595,7 +607,93 @@ def train_CNN_model(num_classes=5, load_latest_model=False):
     print("wrote {}".format(of_p))
 
 
+def load_and_preprocess_img(img_p):
+    """ helper function to load and preprocess img
+        returns shape (1, 3, 255, 255)
+        
+        important!
+        use the Dataset class to preprocess images for training.
+        use this only for saliency map due to slight shape different.y
+        parameters:
+        -----------
+        img_p (str)  path to image.
+
+        returns:
+        --------
+        X  (torch tensor) Image as torch tensor of shape (64, 3, 255, 255)
+    """
+
+    # Load image and reshape to (3, 255, 255)
+    img = Image.open(img_p)
+    img = img.resize((255, 255), Image.ANTIALIAS)
+
+    # Cast to torch tensor.
+    X = np.array(img) # (255, 255, 3) numpy
+    X = X.reshape((1, 255, 255, 3))
+    X = X/255 # "normalize"
+    X = X.swapaxes(2, 3) # (64, 255, 3, 255)
+    X = X.swapaxes(1, 2) # (64, 3, 255, 255) numpy
+    X = torch.from_numpy(X).float() # (64, 3, 255, 255) torch
+
+    return X
+
+
+def saliency_map(model, img_p):
+    """
+    Return saliency map over the image : shape (255, 255)
+    """
+
+    # Load and preprocess image.
+    X = load_and_preprocess_img(img_p) # (3, 255, 255 torch tensor)
+    X.requires_grad_() # This is critical to actually get gradients.
+
+    """
+    # Predict y.
+    ypred = 4 # (for now: set ypred manually)
+
+    # Can I get any gradients at all.
+    with torch.set_grad_enabled(True):
+        out = model(X)
+        out = out.reshape((5,))
+        out.backward(torch.FloatTensor([1., 1., 1., 1., 1.]))        
+        saliency = X.grad
+        print(saliency)
+    """
+
+    # Predict grade and get gradient. Use flashtorch library.
+    # See https://mc.ai/feature-visualisation-in-pytorch%E2%80%8A-%E2%80%8Asaliency-maps/
+    with torch.set_grad_enabled(True):
+        print(X.shape)
+        backprop = Backprop(model) # flashtorch.saliency Backprop object.
+        gradients = backprop.calculate_gradients(X, take_max=True, guided=True)  # (1, 255, 255)
+
+    # Cast image, saliency maps to numpy arrays.
+    X = X.detach() # must 'detach' from gradients before slicing.
+    img_np = X.numpy()[0] # (3, 255, 255)
+    img_np = img_np.swapaxes(0, 1) # (255, 3, 255)
+    img_np = img_np.swapaxes(1, 2) # (255, 255, 3)
+    saliency_map_np = gradients.numpy()[0] # (255, 255)
+    print(max(np.max(saliency_map_np, axis=0)))
+    print(saliency_map_np)
+    print(img_np.shape)
+    print(saliency_map_np.shape)
+
+    # Plot image and overlay saliency map.
+    heatmap = sns.heatmap(saliency_map_np, alpha=0.5)
+    heatmap.imshow(img_np, cmap="YlGnBu")
+    plt.show()
+
+    return saliency_map_np
+
 if __name__ == "__main__":
 
     #split_train_test()
-    train_CNN_model(load_latest_model=False, num_classes=5)
+    #train_CNN_model(load_latest_model=False, num_classes=5)
+
+    model_p = os.path.join("..", "models", "cloud_model.p")
+    model = pickle.load(open(model_p, "rb"))
+    reenable_gradients(model) # e.g., disable fine-tuning mode
+    img_p = os.path.join("..", "demos", "demo_cards",
+                        "poor.jpg")
+    sm = saliency_map(model, img_p)
+

@@ -6,6 +6,7 @@ import os
 import numpy as np
 import itertools
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 def get_M_human_acc():
 
@@ -92,20 +93,33 @@ def plot_humans_vs_machine():
     machine_acc = 63.0
     machine_agreement = 100
 
+    # Global plotting parameters.
+    sns.set_style("white", {"axes.grid" : False})
+    sns.set(font_scale = 1.5)
+    sns.set_context("poster")
+    figsize = (2, 6)
+
     # Accuracy.
     plt.bar(range(2), [human_acc, machine_acc])    
-    plt.xticks(range(2), ["Human", "Machine"])
+    plt.xticks(range(2), ["Human\nAmateur", "Mint\nCondition"])
     plt.ylabel("Percent Accuracy")
-    fig_p = os.path.join("..", "results", "human_vs_machine_accuracy.svg")
-    plt.savefig(fig_p)
+
+    for file_extension in ["png", "svg"]:
+        fig_p = os.path.join("..", "results", "human_vs_machine_accuracy.{}".format(file_extension))
+        plt.tight_layout()
+        plt.savefig(fig_p, figsize=figsize)
+
 
     # Agreement.
     plt.close("all")
     plt.bar(range(2), [human_agreement, machine_agreement])
     plt.xticks(range(2), ["Human", "Machine"])
     plt.ylabel("Percent Agreement")
-    fig_p = os.path.join("..", "results", "human_vs_machine_agreement.svg")
-    plt.savefig(fig_p)
+
+    for file_extension in ["png", "svg"]:
+        fig_p = os.path.join("..", "results", "human_vs_machine_agreement.{}".format(file_extension))
+        plt.tight_layout()
+        plt.savefig(fig_p, figsize=figsize)
 
 if __name__ == "__main__":
 
