@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from sklearn.metrics import f1_score
 from scipy.stats import pearsonr
-from flashtorch.saliency import Backprop, GradientAscent
+from flashtorch.saliency import Backprop
 from scipy.ndimage.filters import gaussian_filter
 
 def split_train_test(test_size = 0.1):
@@ -663,9 +663,9 @@ def saliency_map(model, img_p):
     # Predict grade and get gradient. Use flashtorch library.
     # See https://mc.ai/feature-visualisation-in-pytorch%E2%80%8A-%E2%80%8Asaliency-maps/
     with torch.set_grad_enabled(True):
-        print(X.shape)
         backprop = Backprop(model) # flashtorch.saliency Backprop object.
-        gradients = backprop.calculate_gradients(X, take_max=True, guided=True)  # (1, 255, 255)
+        gradients = backprop.calculate_gradients(X, take_max=True, guided=False)# (1, 255, 255)
+        
 
     # Cast image, saliency maps to numpy arrays.
     X = X.detach() # must 'detach' from gradients before slicing.
@@ -677,6 +677,9 @@ def saliency_map(model, img_p):
     print(saliency_map_np)
     print(img_np.shape)
     print(saliency_map_np.shape)
+
+    # Smooth heatmap.
+    saliency_map_np = gaussian_filter(saliency_map_np, sigma=10)
 
     # Plot image and overlay saliency map.
     heatmap = sns.heatmap(saliency_map_np, alpha=0.5)
@@ -693,7 +696,9 @@ if __name__ == "__main__":
     model_p = os.path.join("..", "models", "cloud_model.p")
     model = pickle.load(open(model_p, "rb"))
     reenable_gradients(model) # e.g., disable fine-tuning mode
-    img_p = os.path.join("..", "demos", "demo_cards",
-                        "poor.jpg")
+    #img_p = os.path.join("..", "demos", "demo_cards",
+    #                    "very_good.jpg")
+    img_p = os.path.join("..", "data", "imgs", "POOR", 
+            "9078_sport185223_conditionPOOR.jpg")
     sm = saliency_map(model, img_p)
 
