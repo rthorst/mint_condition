@@ -136,13 +136,20 @@ def predict(model, img_p):
 
     # Get string label.
     int_to_lbl = {
-        4 : "Mint",
-        3 : "Near Mint",
-        2 : "Excellent",
-        1 : "Very Good",
-        0 : "Poor"
+        4 : "Mint (PSA 9)",
+        3 : "Near Mint (PSA 7)",
+        2 : "Excellent (PSA 5)",
+        1 : "Very Good (PSA 3)",
+        0 : "Poor (PSA 1)"
     }
 
+    # Get confidence as string.
+    #if confidence > 50:
+    #    confidence = "High"
+    #elif confidence < 30:
+    #    confidence = "Low"
+    #else:
+    #    confidence = "Medium"
 
     ypred_str = int_to_lbl[ypred_int]
 
@@ -164,8 +171,16 @@ streamlit.title("MintCondition")
 
 # Allow the user to upload a file.
 FILE_TYPES = [".png", ".jpg", ".jpeg"]
-uploader_title = "Upload a picture of a trading card!"
-file = streamlit.file_uploader(uploader_title)
+uploader_title = """
+### Use AI to grade the condition of a trading card! Simply upload a picture of the card.
+
+For advanced options, use the menu on the left!
+
+[How MintCondition works](how-it-works.html)    
+[How to Price Your card](price-my-card.html)
+"""
+streamlit.markdown(uploader_title)
+file = streamlit.file_uploader(label="")
 
 # Add a checkbox to control the saliency map.
 #show_saliency_map = streamlit.checkbox(
@@ -175,10 +190,30 @@ file = streamlit.file_uploader(uploader_title)
 show_saliency_map = False
 
 # Add a checkbox to add a watermark.
-add_watermark = streamlit.checkbox(
+add_watermark = streamlit.sidebar.checkbox(
     label = "Add watermark to verify grade",
     value = False # default
 )
+
+# Checkbox to show confidence.
+display_confidence = streamlit.sidebar.checkbox(
+    label = "Show how confident the model is",
+    value = False # default
+)
+
+# Checkbox to use random sample card.
+use_random_card = streamlit.sidebar.checkbox(
+    label = "Use a random example card",
+    value = False # default
+)
+
+# If specified by user, select a random card to use.
+if use_random_card:
+
+    cards_p = "cropped_demo_cards"
+    fnames = os.listdir(cards_p)
+    fname = np.random.choice(fnames)
+    file = os.path.join(cards_p, fname)
 
 # Display the raw image, or the saliency map plus image, 
 # Depending on the checkbox value.
@@ -221,6 +256,12 @@ if file != None:
 
     # Title with label.
     plt.title("Grade: {}".format(ypred))
+
+    # Show confidence.
+    if display_confidence:
+        md = "# Confidence: {:.1f}%".format(confidence)
+        md += "\n\n(low confidence? try uploading a different image)"
+        streamlit.markdown(md)
 
     # show image.
     streamlit.pyplot()
