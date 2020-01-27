@@ -1,0 +1,9 @@
+New features:
+    -- Permalink
+    -- Guides on:
+        how model works 
+        how to price it.
+
+Human experiment:
+
+Better model.

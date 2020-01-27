@@ -1,0 +1,23 @@
+The front end should be a web app where you can:
+
+    - Upload a file.
+    - Have it scored by the machine learning model.
+    - See a picture of the file.
+
+                LOGO
+
+                Upload a file.
+
+        PICUTRE                 SCORES
+
+                                grade
+                                confidence
+
+
+
+Good images:
+
+9120_sport185223_conditionPOOR.jpg
+browse files
+
+

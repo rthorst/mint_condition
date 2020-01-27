@@ -1,0 +1,28 @@
+I have a model that works! On my GPU instance.
+
+--- Log.
+I'm using EBAY auctions not dealer data.
+Getting high 40s test accuracy.
+Can do better with:
+
+    - More data (coming from CPU instance, downloading now)
+    - Maybe regularization on the output layer.
+
+--- Todo next.
+
+    On CPU instance.
+    zip -r cropped_imgs.zip cropped_imgs
+    aws s3 cp cropped_imgs.zip s3://mintcondition/
+
+    On GPU instance.
+    aws s3 cp s3://cropped_imgs.zip .
+    extract to data/cropped_imgs
+    train ML model, may need more than 20 epochs. 
+
+--- Tomorrow: take the WHOLE day off.
+
+--- Monday before work:
+    * Get the new model training on GPU.
+    * A quick change would be to regularize the last layer with L2
+        or dropout.
+

@@ -1,0 +1,14 @@
+1. There is a $5B/year market for sports memorabilia, especially trading cards. A key component of the value is the condition, or grade, which is a really technical process. But grading them is hard peer-to-peer.
+
+2. Existing solutions don't work very well.
+    A. In most transactions, two amateurs debate about it. The problem is they're not very good at all at deciding the value, and further any two amateurs are likely to disagree quite a bit. I'll show you data on this.
+
+    B. You can send it to an expert, and the experts are really good. The problem is that the vast majority of cards sell for less than the price that Experts charge ($20) so this is not a viable solution.
+
+3. My solution 
+
+3.  I trained a CNN to take expert auctions and grade the cards.
+
+4.  I find the model is 2X as accurate as humans and 3X improvement in agreement.
+
+5.  Live demo of the model: you can upload a card.
