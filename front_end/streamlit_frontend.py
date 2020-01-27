@@ -9,7 +9,7 @@ from scipy.ndimage import gaussian_filter
 from flashtorch.saliency import Backprop
 import seaborn as sns
 import matplotlib.pyplot as plt
-from torchvision import models
+from torchvision import models, transforms
 
 #####################
 ## Helper functions #
@@ -152,7 +152,7 @@ def load_and_preprocess_img(img_p):
     X = np.array(img)
     assert X.shape == (255, 255, 3)
     X = X.transpose(2, 0, 1) # (3, 255, 255)
-    X = torch.from_numpy(X).float() # (64, 3, 255, 255) torch.
+    X = torch.from_numpy(X).float() # (3, 255, 255) torch.
 
     # Normalize.
     normalize = transforms.Normalize(
@@ -160,6 +160,9 @@ def load_and_preprocess_img(img_p):
         std = [0.229, 0.224, 0.225]
     )
     X = normalize(X)
+
+    # Stack into minibatch of 1 images.
+    X = torch.stack([X]*1) # (64, 3, 255, 255)
 
     return X
 
@@ -179,29 +182,28 @@ def get_saliency_map(model, img_p):
     saliency_map_np : saliency map as (255, 255) numpy array
     """
 
-    # Load and preprocess image as torch array.
-    img = Image.open(img_p).resize((255, 255), Image.ANTIALIAS)
-    X = np.array(img).reshape((1, 255, 255, 3)) / 255
-    X = X.swapaxes(2, 3).swapaxes(1, 2)
-    X = torch.from_numpy(X).float() # (1, 3, 255, 255) torch array.
+    # Load and preprocess image: (1, 3, 255, 255) torch tensor.
+    X = load_and_preprocess_img(img_p)
+
+    # Require gradient.
     X.requires_grad_() # This is critical to actually get gradients.
 
     # Get gradient using flashtorch.
     with torch.set_grad_enabled(True):
         backprop = Backprop(model)
         gradients = backprop.calculate_gradients(input_=X, 
-                target_class=0,
                 take_max = True, 
                 guided = True) # (1, 255, 255)
 
     # Cast image and saliency maps to numpy arrays.
     X = X.detach()
-    img_np = X.numpy()[0].swapaxes(0, 1).swapaxes(1, 2) # (255, 255, 3)
-    saliency_map_np = gradients.numpy()[0] # (255, 255)
-    sailency_map_np = np.absolute(saliency_map_np) # absolute value
+    img_np = X.numpy()[0] # (3, 255, 255)
+    img_np = img_np.transpose(1, 2, 0) # (255, 255, 3)
+    saliency_map_np = gradients.numpy()
+    saliency_map_np = np.absolute(saliency_map_np) # absolute value
     
     # Smooth heatmap.
-    saliency_map_np = gaussian_filter(saliency_map_np, sigma=10)
+    #saliency_map_np = gaussian_filter(saliency_map_np, sigma=10)
 
     return img_np, saliency_map_np
 
@@ -273,6 +275,11 @@ if file != None:
 
     plt.close("all")
     img_np, saliency_map_np = get_saliency_map(model=model, img_p=file)
+
+    img_PIL = Image.open(file).resize((255, 255), Image.ANTIALIAS)
+    img_np = np.array(img_PIL)
+
+    print(saliency_map_np)
 
     # saliency map.
     if show_saliency_map:
