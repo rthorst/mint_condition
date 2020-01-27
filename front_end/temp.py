@@ -10,9 +10,6 @@ from flashtorch.saliency import Backprop
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-#####################
-## Helper functions #
-####################
 def preload_ml_model():
     """ helper function to preload ML model """
     model_p = os.path.join("..", "models", "cloud_model.p")
@@ -125,61 +122,21 @@ model = preload_ml_model()
 ###Main App Display###
 ######################
 
-# Title the app.
-streamlit.title("MintCondition")
 
-# Allow the user to upload a file.
-FILE_TYPES = [".png", ".jpg", ".jpeg"]
-uploader_title = "Upload a picture of a trading card!"
-file = streamlit.file_uploader(uploader_title)
+base_p = os.path.join("..", "data", "imgs", "MINT")
+for fname in os.listdir(base_p):
 
-# Add a checkbox to control the saliency map.
-show_saliency_map = streamlit.checkbox(
-    label = "See what the model sees!",
-    value = False, # default.
-)
+    if not "185226" in fname:
+        continue
 
-# Add a checkbox to add a watermark.
-add_watermark = streamlit.checkbox(
-    label = "Add watermark to verify grade",
-    value = False # default
-)
+    try:
+        p = os.path.join(base_p, fname)
+        ypred, confidence = predict(model=model, img_p=p)
+        print(fname, ypred)
+        if ypred == "excellent":
+            print("**********")
+            import time
+            time.sleep(5)
 
-# Display the raw image, or the saliency map plus image, 
-# Depending on the checkbox value.
-if file != None:
-
-    plt.close("all")
-    img_np, saliency_map_np = get_saliency_map(model=model, img_p=file)
-
-    # saliency map.
-    if show_saliency_map:
-    
-        heatmap = sns.heatmap(saliency_map_np, alpha=0.5, linewidths=0)
-        heatmap.imshow(img_np, cmap="YlGnBu")
-
-    # no saliency map.
-    else:
-
-        plt.imshow(img_np)
-
-    # shared across all plots.
-    plt.axis("off")
-
-    # optional watermark.
-    if add_watermark:
-
-        ax = plt.gca()
-        ax.annotate(
-            xy=(0.5, 0.5), s="Verified By Mint Condition",
-            alpha = 0.5, color="gray", size=20
-        )
-
-    # Predict label.
-    ypred, confidence = predict(model=model, img_p=file)   
-    plt.title("Grade: {}".format(ypred))
-
-    # show image.
-    streamlit.pyplot()
-
-
+    except Exception as e:
+        print(e)
