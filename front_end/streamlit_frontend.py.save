@@ -151,15 +151,12 @@ def load_and_preprocess_img(img_p):
     # Cast to torch tensor. or shape (64, 3, 255, 255)
     X = np.array(img)
     assert X.shape == (255, 255, 3)
-    X = X.transpose(2, 0, 1) # (3, 255, 255)
+    X = X/255
+    X = np.array([X for _ in range(64)])
+    X = X.swapaxes(2, 3) # (64, 255, 3, 255)
+    X = X.swapaxes(1, 2) # (64, 3, 255, 255)
+    print(X.shape)
     X = torch.from_numpy(X).float() # (64, 3, 255, 255) torch.
-
-    # Normalize.
-    normalize = transforms.Normalize(
-        mean = [0.485, 0.456, 0.406],
-        std = [0.229, 0.224, 0.225]
-    )
-    X = normalize(X)
 
     return X
 
@@ -222,12 +219,7 @@ def predict(model, img_p):
         confidence = 100 * np.amax(pred_probs)
 
     # Get string label.
-    int_to_lbl = {
-        4 : "Mint",
-        3 : "Near Mint",
-        2 : "Excellent",
-        1 : "Very Good",
-        0 : "Poor"
+ "Poor"
     }
 
 
