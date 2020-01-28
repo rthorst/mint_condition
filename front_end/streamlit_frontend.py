@@ -222,6 +222,10 @@ if file != None:
     # Predict label and get confidence.
     ypred, confidence = predict(model, file)
 
+    # Show prediction.
+    pred_md = "# Grade: {}".format(ypred)
+    streamlit.markdown(pred_md)
+
     # Get image and saliency map.
     img_PIL = Image.open(file).resize((255, 255), Image.ANTIALIAS)
     img_np = np.array(img_PIL)
@@ -248,14 +252,14 @@ if file != None:
     # optional watermark.
     if add_watermark:
 
+        watermark_s = "{}\nVerified by MintCondition".format(ypred)
+        watermark_s = watermark_s.rjust(50, " ")
         ax = plt.gca()
         ax.annotate(
-            xy=(0.5, 0.5), s="Verified By Mint Condition",
-            alpha = 0.5, color="gray", size=20
+            xy=(0, 0.5), s=watermark_s,
+            alpha = 0.5, color="white", size=20,
+            xycoords = "axes fraction"
         )
-
-    # Title with label.
-    plt.title("Grade: {}".format(ypred))
 
     # Show confidence.
     if display_confidence:
