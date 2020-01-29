@@ -173,7 +173,7 @@ streamlit.title("MintCondition")
 # Allow the user to upload a file.
 FILE_TYPES = [".png", ".jpg", ".jpeg"]
 uploader_title = """
-### Use AI to grade the condition of a trading card! Simply upload a picture of the card.
+## Use AI to grade the condition of a trading card! Simply upload a picture of the card.
 
 For advanced options or to use an example card, use the menu on the left.
 """
@@ -188,7 +188,7 @@ file = streamlit.file_uploader(label="")
 show_saliency_map = False
 
 # Title the "advanced options" section of the sidebar.
-streamlit.sidebar.markdown("## Advanced Options:")
+streamlit.sidebar.markdown("### Advanced Options")
 
 # Add a checkbox to add a watermark.
 add_watermark = streamlit.sidebar.checkbox(
@@ -210,7 +210,7 @@ use_random_card = streamlit.sidebar.checkbox(
 
 # Describe how MintCondition can be used to price a card.
 price_md = """
-## How To Price Your Card
+### How To Price Your Card
 
 After your card is graded, there are 2 good ways to find a price.
 For a quick 'good-enough' estimate, search
@@ -223,14 +223,28 @@ streamlit.sidebar.markdown(price_md)
 
 ## Describe how MintCondition works.
 how_it_works_md = """
-## How MintCondition Works
-
-MintCondition is trained using photos of over 20,000 expert (PSA)-graded
+### How MintCondition Works
+MintCondition learned to grade cards from pictures of over 20,000 expert (PSA)-graded
 trading cards. It uses AI to achieve roughly twice the accuracy
 of the average human amateur. MintCondition is not perfect, but it usually
 produces a reasonable 'good-enough' estimate of the condition of your card.
 """
 streamlit.sidebar.markdown(how_it_works_md)
+
+## What if MintCondition is wrong.
+is_it_wrong_md = """
+### Can MintCondition Be Wrong?
+Yes. For the best results, try uploading a high-quality picture of the card in vertical orientation, similar
+to the example cards. With respect to accuracy, MintCondition is twice as accurate as the 
+average human amateur but can still make mistakes, even on high-quality photos. MintCondition
+also cannot tell if a card has been artificially altered to appear in better condition.
+"""
+streamlit.sidebar.markdown(is_it_wrong_md)
+
+## Contact information.
+streamlit.sidebar.markdown("""
+### Contact 
+The developer [Robert Thorstad](http://www.robertthorstad.com) can be reached at rthorst (at) gmail (dot) com.""")
 
 # If specified by user, select a random card to use.
 if use_random_card:
