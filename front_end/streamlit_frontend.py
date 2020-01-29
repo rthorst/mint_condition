@@ -176,9 +176,6 @@ uploader_title = """
 ### Use AI to grade the condition of a trading card! Simply upload a picture of the card.
 
 For advanced options, use the menu on the left!
-
-[How MintCondition works](how-it-works.html)    
-[How to Price Your card](price-my-card.html)
 """
 streamlit.markdown(uploader_title)
 file = streamlit.file_uploader(label="")
@@ -215,7 +212,7 @@ price_md = """
 After your card is graded, there are 2 good ways to find a price.
 For a quick 'good-enough' estimate, search
 [historical auction data](https://www.ebay.com/b/Sports-Trading-Cards-Accessories/212/bn_1859819)
-for similar cards. You can also try 
+for similar cards. You can also use 
 [paid reference books](https://www.amazon.com/Beckett-Baseball-Card-Price-Guide/dp/1936681331/ref=sr_1_2?keywords=trading+card+guide&qid=1580325809&sr=8-2)
 or [subscription services](https://www.beckett.com/online-price-guide) to find a price. 
 """
