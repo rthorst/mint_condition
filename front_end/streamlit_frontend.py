@@ -10,7 +10,7 @@ from flashtorch.saliency import Backprop
 import seaborn as sns
 import matplotlib.pyplot as plt
 from torchvision import models, transforms
-from ipywebrtc import CameraStream
+import cv2 
 
 #####################
 ## Helper functions #
@@ -207,6 +207,30 @@ use_random_card = streamlit.sidebar.checkbox(
     label = "Use a random example card",
     value = False # default
 )
+
+# Describe how MintCondition can be used to price a card.
+price_md = """
+## How To Price Your Card
+
+After your card is graded, there are 2 good ways to find a price.
+For a quick 'good-enough' estimate, search
+[historical auction data](https://www.ebay.com/b/Sports-Trading-Cards-Accessories/212/bn_1859819)
+for similar cards. You can also try 
+[paid reference books](https://www.amazon.com/Beckett-Baseball-Card-Price-Guide/dp/1936681331/ref=sr_1_2?keywords=trading+card+guide&qid=1580325809&sr=8-2)
+or [subscription services](https://www.beckett.com/online-price-guide) to find a price. 
+"""
+streamlit.sidebar.markdown(price_md)
+
+## Describe how MintCondition works.
+how_it_works_md = """
+## How MintCondition Works
+
+MintCondition is trained using photos of over 20,000 expert (PSA)-graded
+trading cards. It uses AI to achieve roughly twice the accuracy
+of the average human amateur. MintCondition is not perfect, but it usually
+produces a reasonable 'good-enough' estimate of the condition of your card.
+"""
+streamlit.sidebar.markdown(how_it_works_md)
 
 # If specified by user, select a random card to use.
 if use_random_card:
