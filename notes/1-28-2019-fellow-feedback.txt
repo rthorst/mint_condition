@@ -1,0 +1,9 @@
+Todo list:
+
+1. Grade is hard to read.
+    Make grade large and pretty.
+    Add the grade to the watermark.
+
+2. Add instructions on what makes a good photo.
+
+3. Add a camera button.

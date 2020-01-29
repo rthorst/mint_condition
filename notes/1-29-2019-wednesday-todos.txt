@@ -1,0 +1,7 @@
+1. Host application on the web.
+2. Analyze experiment.
+
+3.... ?
+    New features, e.g. camera?
+    Clean up the code?
+

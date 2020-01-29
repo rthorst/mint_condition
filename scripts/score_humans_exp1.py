@@ -1,5 +1,6 @@
 """
-Score human accuracy classifying images.
+Score human accuracy classifying images --- Experiment 1
+(Accuracy with insight fellows).
 """
 import pandas as pd
 import os

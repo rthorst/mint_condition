@@ -10,6 +10,7 @@ from flashtorch.saliency import Backprop
 import seaborn as sns
 import matplotlib.pyplot as plt
 from torchvision import models, transforms
+from ipywebrtc import CameraStream
 
 #####################
 ## Helper functions #
