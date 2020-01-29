@@ -226,8 +226,7 @@ how_it_works_md = """
 ### How MintCondition Works
 MintCondition learned to grade cards from pictures of over 20,000 expert (PSA)-graded
 trading cards. It uses AI to achieve roughly twice the accuracy
-of the average human amateur. MintCondition is not perfect, but it usually
-produces a reasonable 'good-enough' estimate of the condition of your card.
+of the average human amateur.
 """
 streamlit.sidebar.markdown(how_it_works_md)
 
