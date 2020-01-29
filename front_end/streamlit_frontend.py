@@ -175,7 +175,7 @@ FILE_TYPES = [".png", ".jpg", ".jpeg"]
 uploader_title = """
 ### Use AI to grade the condition of a trading card! Simply upload a picture of the card.
 
-For advanced options, use the menu on the left!
+For advanced options or to use an example card, use the menu on the left.
 """
 streamlit.markdown(uploader_title)
 file = streamlit.file_uploader(label="")
@@ -186,6 +186,9 @@ file = streamlit.file_uploader(label="")
 #    value = False, # default.
 #)
 show_saliency_map = False
+
+# Title the "advanced options" section of the sidebar.
+streamlit.sidebar.markdown("## Advanced Options:")
 
 # Add a checkbox to add a watermark.
 add_watermark = streamlit.sidebar.checkbox(
