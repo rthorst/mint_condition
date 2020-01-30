@@ -1,3 +1,4 @@
+import re
 import streamlit
 from PIL import Image
 import numpy as np
@@ -11,6 +12,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from torchvision import models, transforms
 import cv2 
+import requests 
+import bs4
+from ebaysdk.finding import Connection
+from io import BytesIO
 
 #####################
 ## Helper functions #
@@ -30,7 +35,7 @@ def preload_ml_model():
     """
 
     # Load model.
-    model_p = os.path.join("..", "models", "ebay_model.p")
+    model_p = os.path.join("..", "models", "resnet_62_acc_torchsave.p")
     model = torch.load(model_p, 
                        map_location = torch.device("cpu")
             )
@@ -47,11 +52,11 @@ def load_and_preprocess_img(img_p):
     X (torch tensor)
     """
 
-    # Load image and reshape to (3, 255, 255)
+    # Load image and resize to (255, 255)
     img = Image.open(img_p)
     img = img.resize((255, 255), Image.ANTIALIAS)
 
-    # Cast to torch tensor. or shape (64, 3, 255, 255)
+    # Cast to torch tensor of shape (3, 255, 255)
     X = np.array(img)
     assert X.shape == (255, 255, 3)
     X = X.transpose(2, 0, 1) # (3, 255, 255)
@@ -112,8 +117,7 @@ def get_saliency_map(model, img_p, ypred):
     img_np = X.numpy()[0] # (3, 255, 255)
     img_np = img_np.transpose(1, 2, 0) # (255, 255, 3)
     saliency_map_np = gradients[0].numpy()
-    #saliency_map_np = np.absolute(saliency_map_np) # absolute value
-    
+    #saliency_map_np = np.absolute(saliency_map_np) # absolute value   
     # Smooth heatmap.
     saliency_map_np = gaussian_filter(saliency_map_np, sigma=10)
 
@@ -174,11 +178,47 @@ streamlit.title("MintCondition")
 FILE_TYPES = [".png", ".jpg", ".jpeg"]
 uploader_title = """
 ## Use AI to grade the condition of a trading card! Simply upload a picture of the card.
-
-For advanced options or to use an example card, use the menu on the left.
 """
 streamlit.markdown(uploader_title)
 file = streamlit.file_uploader(label="")
+
+## Get an image from ebay.
+#streamlit.markdown("## Or, enter an ebay auction URL below and press Enter.")
+#ebay_url = streamlit.text_input("")
+ebay_url = None
+if ebay_url not in [None, ""]:
+
+    try: 
+
+        # output loading message to user.
+        streamlit.text("Loading image from ebay...please wait")
+
+        # download it.
+        print("download {}".format(ebay_url))
+        html = requests.get(ebay_url).text
+
+        # get item number.
+        #pat = re.compile(r'itemid="\d+')
+        #mat = re.findall(pattern=pat, string=html)[0]
+        #item_id = mat.lstrip('itemid="')
+        #print(item_id)
+
+        # get image url.
+        url_pat = re.compile(r"bigImage.src ='\S+s-1300.jpg")
+        url_pat = re.compile(r"bigImage.src\s{0,2}=\s{0,2}'\S+;")
+        mat = re.findall(pattern=url_pat, string=html)[0]
+        print(mat)
+        img_url = mat.split("'")[1]
+
+        # download image.
+        print("download {}".format(img_url))
+        img_bytes = requests.get(img_url).content
+        file = BytesIO(img_bytes)
+
+    except Exception as e:
+        print(e)
+        streamlit.markdown("Sorry! We can't retrieve an image from that URL")
+
 
 # Add a checkbox to control the saliency map.
 #show_saliency_map = streamlit.checkbox(

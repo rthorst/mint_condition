@@ -63,7 +63,7 @@ def load_and_preprocess_img(img_p):
 def test_model():
 
     # Load model.
-    model_p = os.path.join("..", "models", "ebay_model.p")
+    model_p = os.path.join("..", "models", "resnet_62_acc_torchsave.p")
     print("load {}".format(model_p))
     model = torch.load(model_p, map_location = torch.device("cpu"))
 
