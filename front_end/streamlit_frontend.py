@@ -184,7 +184,7 @@ file = streamlit.file_uploader(label="")
 
 ## Get an image from ebay.
 ebay_md = """
-## Or, enter an ebay auction URL below and press Enter.
+### Or, enter an ebay auction URL below and press Enter.
 Note: to later upload a picture, first delete this URL and press Enter
 """
 streamlit.markdown(ebay_md)
@@ -301,56 +301,67 @@ if use_random_card:
 # Depending on the checkbox value.
 if file != None:
 
-    # Predict label and get confidence.
-    ypred, confidence = predict(model, file)
+    try:
 
-    # Show prediction.
-    pred_md = "# Grade: {}".format(ypred)
-    streamlit.markdown(pred_md)
+        # Predict label and get confidence.
+        ypred, confidence = predict(model, file)
 
-    # Get image and saliency map.
-    img_PIL = Image.open(file).resize((255, 255), Image.ANTIALIAS)
-    img_np = np.array(img_PIL)
-    _, saliency_map_np = get_saliency_map(model=model, 
+        # Show prediction.
+        pred_md = "# Grade: {}".format(ypred)
+        streamlit.markdown(pred_md)
+
+        # Get image and saliency map.
+        img_PIL = Image.open(file).resize((255, 255), Image.ANTIALIAS)
+        img_np = np.array(img_PIL)
+        _, saliency_map_np = get_saliency_map(model=model, 
                                      img_p=file, ypred=0)
 
-    # Initiailize new plot, close old plots.
-    plt.close("all")
+        # Initiailize new plot, close old plots.
+        plt.close("all")
 
-    # saliency map.
-    if show_saliency_map:
+        # saliency map.
+        if show_saliency_map:
     
-        heatmap = sns.heatmap(saliency_map_np, alpha=0.8, linewidths=0,
+            heatmap = sns.heatmap(saliency_map_np, alpha=0.8, linewidths=0,
                   cbar=False)
-        heatmap.imshow(img_np, cmap="RdBu")
+            heatmap.imshow(img_np, cmap="RdBu")
 
-    # no saliency map.
-    else:
+        # no saliency map.
+        else:
 
-        plt.imshow(img_np)
+            plt.imshow(img_np)
 
-    # shared across all plots.
-    plt.axis("off")
+        # shared across all plots.
+        plt.axis("off")
 
-    # optional watermark.
-    if add_watermark:
+        # optional watermark.
+        if add_watermark:
 
-        watermark_s = "{}\nVerified by MintCondition".format(ypred)
-        watermark_s = watermark_s.rjust(50, " ")
-        ax = plt.gca()
-        ax.annotate(
-            xy=(0, 0.5), s=watermark_s,
-            alpha = 0.5, color="white", size=20,
-            xycoords = "axes fraction"
-        )
+            watermark_s = "{}\nVerified by MintCondition".format(ypred)
+            watermark_s = watermark_s.rjust(50, " ")
+            ax = plt.gca()
+            ax.annotate(
+                xy=(0, 0.5), s=watermark_s,
+                alpha = 0.5, color="white", size=20,
+                xycoords = "axes fraction"
+            )
 
-    # Show confidence.
-    if display_confidence:
-        md = "# Confidence: {:.1f}%".format(confidence)
-        md += "\n\n(low confidence? try uploading a different image)"
-        streamlit.markdown(md)
+        # Show confidence.
+        if display_confidence:
+            md = "# Confidence: {:.1f}%".format(confidence)
+            md += "\n\n(low confidence? try uploading a different image)"
+            streamlit.markdown(md)
 
-    # show image.
-    streamlit.pyplot()
+        # show image.
+        streamlit.pyplot()
 
+    except Exception as e:
+        print(e) # for logging.
+        error_md = """
+        There was an error processing the picture. Please try again with 
+        a different picture. This can happen if the image uses a non-standard
+        file format (.JPG is preferred) or sometimes if the image is grayscale
+        (try a full-color image).
+        """
+        streamlit.markdown(e)
 
