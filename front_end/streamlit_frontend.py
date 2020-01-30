@@ -183,9 +183,13 @@ streamlit.markdown(uploader_title)
 file = streamlit.file_uploader(label="")
 
 ## Get an image from ebay.
-#streamlit.markdown("## Or, enter an ebay auction URL below and press Enter.")
-#ebay_url = streamlit.text_input("")
-ebay_url = None
+ebay_md = """
+## Or, enter an ebay auction URL below and press Enter.
+Note: to later upload a picture, first delete this URL and press Enter
+"""
+streamlit.markdown(ebay_md)
+ebay_url = streamlit.text_input("")
+#ebay_url = None
 if ebay_url not in [None, ""]:
 
     try: 
@@ -220,12 +224,6 @@ if ebay_url not in [None, ""]:
         streamlit.markdown("Sorry! We can't retrieve an image from that URL")
 
 
-# Add a checkbox to control the saliency map.
-#show_saliency_map = streamlit.checkbox(
-#    label = "See what the model sees!",
-#    value = False, # default.
-#)
-show_saliency_map = False
 
 # Title the "advanced options" section of the sidebar.
 streamlit.sidebar.markdown("### Advanced Options")
@@ -246,6 +244,12 @@ display_confidence = streamlit.sidebar.checkbox(
 use_random_card = streamlit.sidebar.checkbox(
     label = "Use a random example card",
     value = False # default
+)
+
+# Add a checkbox to control the saliency map.
+show_saliency_map = streamlit.sidebar.checkbox(
+    label = "See what the model sees!",
+    value = False, # default.
 )
 
 # Describe how MintCondition can be used to price a card.
@@ -316,7 +320,8 @@ if file != None:
     # saliency map.
     if show_saliency_map:
     
-        heatmap = sns.heatmap(saliency_map_np, alpha=0.8, linewidths=0)
+        heatmap = sns.heatmap(saliency_map_np, alpha=0.8, linewidths=0,
+                  cbar=False)
         heatmap.imshow(img_np, cmap="RdBu")
 
     # no saliency map.
