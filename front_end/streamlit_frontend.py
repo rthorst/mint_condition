@@ -184,8 +184,7 @@ file = streamlit.file_uploader(label="")
 
 ## Get an image from ebay.
 ebay_md = """
-### Or, enter an ebay auction URL below and press Enter.
-Note: to later upload a picture, first delete this URL and press Enter
+Or, enter an ebay auction URL below and press Enter (beta).
 """
 streamlit.markdown(ebay_md)
 ebay_url = streamlit.text_input("")
@@ -248,7 +247,7 @@ use_random_card = streamlit.sidebar.checkbox(
 
 # Add a checkbox to control the saliency map.
 show_saliency_map = streamlit.sidebar.checkbox(
-    label = "See what the model sees!",
+    label = "See what the model sees! (beta)",
     value = False, # default.
 )
 
