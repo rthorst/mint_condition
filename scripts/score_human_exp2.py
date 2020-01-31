@@ -73,9 +73,17 @@ def calculate_rerating_scores():
             # rating.
             if changed:
 
-                towards_machine = abs(new - machine_rating) < abs(init - machine_rating) 
-                change_towards_machine += int(towards_machine)
-                change_away_from_machine += 1 - int(towards_machine)
+                old_diff = abs(init - machine_rating)
+                new_diff = abs(new - machine_rating)
+
+                if new_diff < old_diff: 
+                    change_towards_machine += 1
+
+                elif old_diff < new_diff:
+                    change_towards_machine += 1
+
+                else: # Could be equal, e.g. 
+                    pass
 
     # Summarize results.
     perc_change = 100 *changed_yes / (changed_yes + changed_no)
