@@ -37,7 +37,7 @@ def preload_ml_model():
     # Load model.
     #model_p = os.path.join("..", "models", "resnet_62_acc_torchsave.p")
     #model_p = os.path.join("..", "models", "10class_45_acc_torchsave.p")
-    model_p = os.path.join("..", "models", "10class_56_acc.p")
+    model_p = os.path.join("..", "models", "10class_58_acc.p")
     model = torch.load(model_p, 
                        map_location = torch.device("cpu")
             )
@@ -137,7 +137,7 @@ def predict(model, img_p):
     with torch.set_grad_enabled(False):
         pred_logits = model(X).numpy()[0] # (1, 5) numpy
         pred_probs = softmax(pred_logits)
-        print("predicted probabilities", pred_probs)
+        print("predicted probabilities", [round(100*v, 1) for v in pred_probs])
         ypred_int = np.argmax(pred_probs) # int. 
         confidence = 100 * np.amax(pred_probs)
 
