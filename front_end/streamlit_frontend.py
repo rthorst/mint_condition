@@ -36,7 +36,8 @@ def preload_ml_model():
 
     # Load model.
     #model_p = os.path.join("..", "models", "resnet_62_acc_torchsave.p")
-    model_p = os.path.join("..", "models", "10class_42_acc_torchsave.p")
+    #model_p = os.path.join("..", "models", "10class_45_acc_torchsave.p")
+    model_p = os.path.join("..", "models", "10class_56_acc.p")
     model = torch.load(model_p, 
                        map_location = torch.device("cpu")
             )
@@ -157,7 +158,7 @@ def predict(model, img_p):
         4 : "Excellent (PSA 5)",
         3 : "Very Good-Excellent (PSA 4)",
         2 : "Very Good (PSA 3)",
-        1 : "Very Good-Excellent (PSA 2)", 
+        1 : "Good (PSA 2)", 
         0 : "Poor (PSA 1)"
     }
 
@@ -198,50 +199,47 @@ add_watermark = streamlit.sidebar.checkbox(
     label = "Add watermark to verify grade",
     value = False # default
 )
-if not hide_upload_text:
+# Allow the user to upload a file.
+FILE_TYPES = [".png", ".jpg", ".jpeg"]  
+uploader_title = """
+## Use AI to grade the condition of a trading card!
+"""
+streamlit.markdown(uploader_title)
+file = streamlit.file_uploader(label="Option 1: Upload a Picture of the Card")
 
-    # Allow the user to upload a file.
-    FILE_TYPES = [".png", ".jpg", ".jpeg"]  
-    uploader_title = """
-    ## Use AI to grade the condition of a trading card!
-    """
-    streamlit.markdown(uploader_title)
-    file = streamlit.file_uploader(label="Option 1: Upload a Picture of the Card")
+## Get an image from ebay.
+ebay_md = """
+Option 2: enter an ebay auction URL e.g. http://www.ebay.to/38WsPoW
+"""
+#streamlit.markdown(ebay_md)
+ebay_url = streamlit.text_input(ebay_md)
 
-    ## Get an image from ebay.
-    ebay_md = """
-    Option 2: enter an ebay auction URL e.g. http://www.bit.ly/topps-psa9
-    """
-    #streamlit.markdown(ebay_md)
-    ebay_url = streamlit.text_input(ebay_md)
+if ebay_url not in [None, ""]:
 
-    if ebay_url not in [None, ""]:
+    try: 
 
-        try: 
+        # output loading message to user.
+        #streamlit.text("Loading image from ebay...please wait")
 
-            # output loading message to user.
-            streamlit.text("Loading image from ebay...please wait")
+        # download it.
+        print("download {}".format(ebay_url))
+        html = requests.get(ebay_url).text
 
-            # download it.
-            print("download {}".format(ebay_url))
-            html = requests.get(ebay_url).text
+        # get image url.
+        url_pat = re.compile(r"bigImage.src ='\S+s-1300.jpg")
+        url_pat = re.compile(r"bigImage.src\s{0,2}=\s{0,2}'\S+;")
+        mat = re.findall(pattern=url_pat, string=html)[0]
+        print(mat)
+        img_url = mat.split("'")[1]
 
-            # get image url.
-            url_pat = re.compile(r"bigImage.src ='\S+s-1300.jpg")
-            url_pat = re.compile(r"bigImage.src\s{0,2}=\s{0,2}'\S+;")
-            mat = re.findall(pattern=url_pat, string=html)[0]
-            print(mat)
-            img_url = mat.split("'")[1]
+        # download image.
+        print("download {}".format(img_url))
+        img_bytes = requests.get(img_url).content
+        file = BytesIO(img_bytes)
 
-            # download image.
-            print("download {}".format(img_url))
-            img_bytes = requests.get(img_url).content
-            file = BytesIO(img_bytes)
-
-        except Exception as e:
-            print(e)
-            streamlit.markdown("Sorry! We can't retrieve an image from that URL")
-
+    except Exception as e:
+        print(e)
+        streamlit.markdown("Sorry! We can't retrieve an image from that URL")
 
 # Checkbox to show confidence.
 display_confidence = streamlit.sidebar.checkbox(
@@ -311,8 +309,6 @@ if use_random_card:
 # Depending on the checkbox value.
 if file != None:
 
-    hide_upload_text = True
-
     try:
 
         # Predict label and get confidence.
@@ -320,7 +316,7 @@ if file != None:
 
         # Show prediction.
         pred_md = "# Grade: {}".format(ypred)
-        streamlit.markdown(pred_md)
+        #streamlit.markdown(pred_md)
 
         # Get image and saliency map.
         img_PIL = Image.open(file).resize((255, 255), Image.ANTIALIAS)
@@ -363,6 +359,9 @@ if file != None:
             md = "# Confidence: {:.1f}%".format(confidence)
             md += "\n\n(low confidence? try uploading a different image)"
             streamlit.markdown(md)
+
+        # Title with grade.
+        plt.title("Grade : {}".format(ypred))
 
         # show image.
         streamlit.pyplot()
