@@ -1,5 +1,5 @@
 <p align="center">
-![](mint_condition_readme_demo.gif)
+<img src = "mint_condition_readme_demo.gif" size="130%">
 </center>
 
 # Overview
