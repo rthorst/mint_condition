@@ -9,3 +9,10 @@ There is $5 billion market for sports memorabilia every year, a large part of wh
 * **Use Mint Condition:** [bit.ly/mintc-app](bit.ly/mintc-app)
 * **See How the Model Was Trained** [scripts/train_ml_model.py](scripts/train_ml_model.py)
 * **See How the Front-End Works** [front_end/MintCondition.py](front_end/MintCondition.py)
+
+# How Mint Condition Works
+
+# Training Data
+Mint Condition was trained to predict the labels of professionally-graded cards from Ebay auctions. Currently, it was trained on just over 90,000 such cards. While the dataset is too large to make available on GitHub, you can acquire the data yourself using [scripts/download_ebay.py](scripts/download_ebay.py). You will need to acquire Ebay API keys for this process.
+
+
