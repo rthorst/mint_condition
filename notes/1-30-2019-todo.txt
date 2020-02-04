@@ -1,0 +1,9 @@
+Fix bugs:
+--- Broken image? Do something smart.
+--- Can't find picture on ebay? Do something smart.
+--- Add "beta" note to see what the model sees.
+
+1. Try to rip an auction off of ebay.
+2. Try to make the model more explanatory.
+
+

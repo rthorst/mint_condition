@@ -1,0 +1,6 @@
+The biggest confusion in the confusion matrix is between the lower grades:
+    "Very good" vs. "Poor".
+
+This is more subjective: same defects, but more 'serious'.
+
+

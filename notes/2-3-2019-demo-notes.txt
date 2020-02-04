@@ -1,0 +1,104 @@
+Feedback on my intro was:
+-- Needs more visual interest (more stuff on slides, animations)
+
+Brainstorming. The most interseting technical challenges I solved were:
+
+1. Acquiring a dataset where the content of a card (e.g. sport) is 
+not correlated with its condition.
+
+2. Training a deep CNN model (variant of ResNet) from scratch with 
+well-tuned regularization, optimization, and data augmentation.
+
+3. Collecting data on how MintCondition compares to existing alterantives, 
+e.g. human amateurs.
+
+---- Slide 1 -------
+There's a $5 billion market for sports memorabilia, and a 
+problem at the heart of the market that we can solve with data.
+
+The value of the card depends heavily on condition: for example, this card
+could swing from $2 million to $10,000 depending on condition. 
+
+----- Slide 2 ---------
+The problem is that existing ways we grade condition don't work.
+
+In most transactions, amateurs simply debate about the condition. I have 
+data that they're highly inaccurate and unlikely to agree with each other.
+
+Human experts can grade the cards very accurately, but the cost and time
+investment are prohibitive for the majority of transactions. For example,
+there are over 7 million active Ebay auctions for ungraded cards.
+
+------ Slide 3 ------
+The solution is to treat this as a data problem. We have access to a large number of cards that have already been graded by experts. Computer vision models are really good at taking labeled expert data and learning to make the same judgments, but much more cheaply and rapidly. Thus the vision is to make costly expert grading available to everyday amateur transactions.
+
+I trained a model to take pictures of more than 160,000 expert-graded cards
+and predict the condition assigned to it by the expert. 
+
+The most interesting technical challenges involved:
+1. Acquiring a dataset where the content of the card is dissociated from
+its condition.
+2. Training a deep CNN model from scratch (variant of ResNet) with appropriately tuned regularization, optimization, and data augmentation.
+3. Collecting data on how Mint Condition compares to the most common existing alternative, human annotation.
+
+------ Slide 4 --------
+I directly compared MintCondition to the existing solution, grading by 
+human amateurs. In the graphs below, chance is 20% (1/5), green is Mint
+Condition, and blue is human amateurs.
+
+I have three main results:
+
+1. MintCondition roughly doubles the accuracy of human amateurs, providing
+a quick "good enough" estimate of condition that is superior to existing
+grades.
+
+2. MintCondition triples the agreement level of human amateurs, who are
+highly unlikely to agree on the condition of a card, even when one of them
+is right. 
+
+3. Most people want the chance to have an AI model assist them in grading
+cards, implying that people would use Mint Condition if given the chance.
+
+--------- Demo -------------
+
+In the simplest case, users can upload a picture of a card and rapidly
+receive a grade. To make this more interesting, I'll instead enter the 
+URL to an Ebay auction for a trading card. You can see that the model accurately
+grades the card.
+
+I've added several optional features. These include:
+1. The ability to add a watermark to verify the authenticity of the grade in an
+online auction setting.
+
+2. The ability to see how confident the model is about its grade, which could
+indicate cases where the user should try to upload a better picture of the card.
+
+3. The ability to see what the model is looking at, which can give some
+insight into what the model sees about the card.
+
+In summary, the vision is to bring accessible expert-level annotation to in-person
+and online amateur transactions. 
+
+--- About Me ---
+
+My background is in cognitive psychology, specifically a project we called "data
+mining the mind." I studied people's large-scale online behavior (for example
+tens of millions of social media posts), and tried to teach models to use that 
+behavior to predict interesting facts about your psychology. For example, I have
+publications using your tweets to predict your decisions, and your Reddit posts to
+make inferences about your mental health.
+
+I'm excited to work in data science, because:
+    
+    1. I have 5 years experience working with large, messy real-world datasets
+    using a variety of supervised and unsupervised machine learning techniques,
+    NLP, and data mining. 
+
+    2. I'm interested in using this data science toolbox to work in interesting
+    applied problems in industry.
+
+
+
+
+
+

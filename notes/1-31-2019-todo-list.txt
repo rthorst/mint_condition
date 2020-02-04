@@ -1,0 +1,6 @@
+I'm extending my ML model to 10 classes.
+
+    -- Done. Now extending to ResNet-50.
+
+I had crawled just baseball cards. I'm now repeating for basketball
+cards to double dataset size. 

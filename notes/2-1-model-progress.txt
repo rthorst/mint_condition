@@ -1,0 +1,12 @@
+-- Tonight got a model with 64% accuracy going. Did it with extra 
+basketball cards and fewer data augmentations.
+
+-- TODO NEXT re-add the data augmentations which will help generalization.
+Also re-add the extra basketball cards which should be done.
+
+Have more basketball cards downloading on CPU instance. When done, add
+those to cropped_images and retrain model on GPU instance, being sure
+to first re-create the partition.
+
+-- Never mind, the basketball alone is OK.
+

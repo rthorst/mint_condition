@@ -1,0 +1,9 @@
+---- Exp1 (62% acc. Saved as resnet_acc_62.p on GPU instance).
+- Deeper model (ResNet18)
+- Smaller learning rate (reduce 5X) to capitalize on pretraining.
+- Add more transformations (graysacle and random_crop) with small prob.
+- Note: train on python 2.
+
+-------- Now running same, but:
+- Python 3.
+- More data augmentations, and with higher probabilitiy.

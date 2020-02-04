@@ -1,0 +1,70 @@
+1. [[Picture of PSA 5 Mickey Mantle]]
+    [know the issues with the card]
+
+    There is a $5b market for sports memorabilia, and a problem at the 
+    heart that can be solved with data. The largest market is for trading
+    cards, the value of which depends highly on condition. But this is 
+    very hard to assess for amateurs who are the vast majority of the 
+    market. So for example, what condition is this card in?
+
+2. [[Pictures of how we solve this now]]
+
+    We solve this now in two ways, neither of which are very effective.
+    Primarily, we argue about it, but we're neither accurate nor likely
+    to agree, reducing the accuracy of our evaluation and likelihood to 
+    agree to trade. Expert evaluation is possible but much too costly
+    and time-intensive for the vast majority of transactions.
+
+3. [[Picture of CNN model]]
+
+    We can solve this problem with data. We can use pictures of cards 
+    to teach a model how humans have historically graded cards, and, 
+    since it's a perceptual problem, we would expect ML models to be 
+    good at it. I did this by using ### cards from Ebay auctions that
+    have verified professional grades, and fine-tuning a CNN model with
+    residual "skip" connections.
+
+4. [[Results]]
+
+    I find the model improves humans in two ways:
+        It's twice as accurate.
+        It's 3X as reliable.
+
+    I also find that most people are interested in having a machine
+    help them grade cards.
+
+    This implies we can make automated card grading accessible to people,
+    improving the accuracy and reliability of everyday transactions.
+
+5. [[Demo]]
+
+    At its base, users can upload a card and get a quick "good-enough"
+    estimate of its condition (show). They can also directly scrape
+    the picture from an ecommerce auction, and in the future this could
+    be integrated into an ecommerce platform.
+
+    There are several additional features, including:
+    - A watermark to verify authenticity of the grade. 
+    - The ability to use a random example card as a demo.
+    - A (beta) feature to see what the model sees.
+    - Some explanation of how to use and understand the model.
+
+6. About me:
+
+    My PhD project was "data mining the mind," asking what your large-scale
+    online behavior says about you as a person. For example: do your 
+    tweets predict decisions? Do your reddit posts predict mental illness?
+    This involved scraping social media data at scale and teaching using
+    models, often NLP, to predict facets of people's psychology.
+
+    I feel this gives me particular strengths in NLP and data mining, but
+    more broadly I have 5 years experience using ML and data science 
+    techniques to work with millions-scale natural datasets and answer
+    scientific questions.
+
+
+Tagline brainstorming.
+Now, trading card grading is COSTLY and IMPRECISE.
+So I make more ACCURATE and LOW-COST trading card grading with AI.
+The goal is to IMPROVE peer-to-peer trading card transactions.
+
