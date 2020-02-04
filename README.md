@@ -1,7 +1,7 @@
 <p align="center">
 <img src = "mint_condition_readme_demo.gif" style = "
-    { height : 500%; 
-      width : 500%;
+    { height : 200%; 
+      width : 200%;
     }
 ">
 </center>
