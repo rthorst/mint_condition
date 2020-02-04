@@ -3,4 +3,4 @@
 </center>
 
 # Overview
-The value of a trading card is highly dependent on its condition. Assessing the condition of a card is hard right now, as amateurs are not very accurate and expert evaluations are costly and time-intensive. MintCondition is a web application that automatically grades trading cards from a picture, aiming to put near-expert level accuracy within reach of everyday amateur transactions.
+There is $5 billion market for sports memorabilia every year, a large part of which are trading cards. The value of a card depends highly on its condition, yet existing ways to grade the condition of a card are not effective for most transactions. Amateurs are highly inaccurate at grading cards themselves, and expert annotations are too costly and time-intensive for the vast majority of transactions. The result is that millions of trading cards are simply sold as ungraded. To address this problem, MintCondition is a web application that automatically grades trading cards from a picture, aiming to put near-expert level accuracy within reach of everyday amateur transactions.
