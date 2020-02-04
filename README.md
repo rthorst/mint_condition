@@ -11,7 +11,7 @@ There is $5 billion market for sports memorabilia every year, a large part of wh
 * **See How the Front-End Works** [front_end/MintCondition.py](front_end/MintCondition.py)
 
 # How Mint Condition Works
-Mint Condition uses a machine learning model, specifically a Convolutional Neural Network (ResNet-18 trained from scratch), to predict the labels that experts assigned to training cards. In pilot experiments, this approach works much better than simply fine-tuning the top layer of a pretranied network, perhaps because low-level visual features such as scratches, printing defects, and rounded corners are very important for grading trading cards.
+Mint Condition uses a machine learning model, specifically a Convolutional Neural Network (ResNet-18 trained from scratch), to predict the labels that experts assigned to training cards. In pilot experiments, this approach works much better than simply fine-tuning the top layer of a pretrained network, perhaps because low-level visual features such as scratches, printing defects, and rounded corners are very important for grading trading cards.
 
 ![](model_figure.png)
 
