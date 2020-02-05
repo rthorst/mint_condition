@@ -36,8 +36,9 @@ def preload_ml_model():
 
     # Load model.
     #model_p = os.path.join("..", "models", "resnet_62_acc_torchsave.p")
-    #model_p = os.path.join("..", "models", "10class_45_acc_torchsave.p")
-    model_p = os.path.join("..", "models", "10class_64_acc.p")
+    #model_p = os.path.join("..", "models", "10class_58_acc.p")
+    #model_p = os.path.join("..", "models", "10class_74_acc.p")
+    model_p = os.path.join("..", "models", "10class_45_acc_torchsave.p")
     model = torch.load(model_p, 
                        map_location = torch.device("cpu")
             )
@@ -209,7 +210,7 @@ file = streamlit.file_uploader(label="Option 1: Upload a Picture of the Card")
 
 ## Get an image from ebay.
 ebay_md = """
-Option 2: enter an ebay auction URL e.g. http://www.shorturl.at/MQWY8
+Option 2: enter an ebay auction URL.
 """
 #streamlit.markdown(ebay_md)
 ebay_url = streamlit.text_input(ebay_md)
