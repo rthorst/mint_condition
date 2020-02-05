@@ -210,7 +210,7 @@ file = streamlit.file_uploader(label="Option 1: Upload a Picture of the Card")
 
 ## Get an image from ebay.
 ebay_md = """
-Option 2: enter an ebay auction URL.
+Option 2: enter an ebay auction URL, e.g. https://www.ebay.to/2Uma7TL
 """
 #streamlit.markdown(ebay_md)
 ebay_url = streamlit.text_input(ebay_md)
@@ -305,6 +305,7 @@ if use_random_card:
     fname = np.random.choice(fnames)
     file = os.path.join(cards_p, fname)
 
+    print(file) # for testing -- logs behind scenes to shell.
 
 # Display the raw image, or the saliency map plus image, 
 # Depending on the checkbox value.
