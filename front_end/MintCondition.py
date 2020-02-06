@@ -210,7 +210,7 @@ file = streamlit.file_uploader(label="Option 1: Upload a Picture of the Card")
 
 ## Get an image from ebay.
 ebay_md = """
-Option 2: enter an ebay auction URL, e.g. https://www.ebay.to/2Uma7TL
+Option 2: enter an ebay auction URL, e.g. https://www.ebay.to/3bgWtHm
 """
 #streamlit.markdown(ebay_md)
 ebay_url = streamlit.text_input(ebay_md)
@@ -318,7 +318,7 @@ if file != None:
 
         # Show prediction.
         pred_md = "# Grade: {}".format(ypred)
-        #streamlit.markdown(pred_md)
+        streamlit.markdown(pred_md)
 
         # Get image and saliency map.
         img_PIL = Image.open(file).resize((255, 255), Image.ANTIALIAS)
