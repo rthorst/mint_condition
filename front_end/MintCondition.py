@@ -35,10 +35,10 @@ def preload_ml_model():
     """
 
     # Load model.
-    #model_p = os.path.join("..", "models", "resnet_62_acc_torchsave.p")
+    model_p = os.path.join("..", "models", "resnet_62_acc_5_class_torchsave.p")
     #model_p = os.path.join("..", "models", "10class_58_acc.p")
     #model_p = os.path.join("..", "models", "10class_74_acc.p")
-    model_p = os.path.join("..", "models", "10class_45_acc_torchsave.p")
+    #model_p = os.path.join("..", "models", "10class_45_acc_torchsave.p")
     model = torch.load(model_p, 
                        map_location = torch.device("cpu")
             )
@@ -143,25 +143,25 @@ def predict(model, img_p):
         confidence = 100 * np.amax(pred_probs)
 
     # Get string label.
-    #int_to_lbl = {
-    #    4 : "Mint (PSA 9)",
-    #    3 : "Near Mint (PSA 7)",
-    #    2 : "Excellent (PSA 5)",
-    #    1 : "Very Good (PSA 3)",
-    #    0 : "Poor (PSA 1)"
-    #}
     int_to_lbl = {
-        9 : "Gem Mint (PSA 10)",
-        8 : "Mint (PSA 9)",
-        7 : "Near Mint-Mint (PSA 8)",
-        6 : "Near Mint (PSA 7)",
-        5 : "Excellent-Mint (PSA 6)",
-        4 : "Excellent (PSA 5)",
-        3 : "Very Good-Excellent (PSA 4)",
-        2 : "Very Good (PSA 3)",
-        1 : "Good (PSA 2)", 
+        4 : "Mint (PSA 9)",
+        3 : "Near Mint (PSA 7)",
+        2 : "Excellent (PSA 5)",
+        1 : "Very Good (PSA 3)",
         0 : "Poor (PSA 1)"
     }
+    #int_to_lbl = {
+    #    9 : "Gem Mint (PSA 10)",
+    #    8 : "Mint (PSA 9)",
+    #    7 : "Near Mint-Mint (PSA 8)",
+    #    6 : "Near Mint (PSA 7)",
+    #    5 : "Excellent-Mint (PSA 6)",
+    #    4 : "Excellent (PSA 5)",
+    #    3 : "Very Good-Excellent (PSA 4)",
+    #    2 : "Very Good (PSA 3)",
+    #    1 : "Good (PSA 2)", 
+    #    0 : "Poor (PSA 1)"
+    #}
 
     # Get confidence as string.
     #if confidence > 50:
@@ -210,7 +210,7 @@ file = streamlit.file_uploader(label="Option 1: Upload a Picture of the Card")
 
 ## Get an image from ebay.
 ebay_md = """
-Option 2: enter an ebay auction URL, e.g. https://www.ebay.to/3bgWtHm
+Option 2: enter an ebay auction URL, e.g. https://ebay.to/32conjA
 """
 #streamlit.markdown(ebay_md)
 ebay_url = streamlit.text_input(ebay_md)
