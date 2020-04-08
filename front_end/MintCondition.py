@@ -16,8 +16,29 @@ import requests
 import bs4
 from ebaysdk.finding import Connection
 from io import BytesIO
+import sqlite3
+import time 
+import sys
 
+
+######################
+## Logging ##########
 #####################
+
+# Connect to SQL database, for logging.
+# This will create the database file if it does not exist.
+log_p = "log.sql"
+conn = sqlite3.connect(log_p)
+cursor = conn.cursor()
+
+# If they do not already exist, create two log tables: event and error.
+# Note that the tables will not be over-written if they already exist.
+for sql_fname in ["create-error-table.sql", "create-event-table.sql"]:
+    sql_command = open(sql_fname, "r").read()
+    cursor.execute(sql_command)
+
+
+####################
 ## Helper functions #
 ####################
 
@@ -313,6 +334,8 @@ if file != None:
 
     try:
 
+        #raise Exception("test exception!")
+
         # Predict label and get confidence.
         ypred, confidence = predict(model, file)
 
@@ -368,6 +391,17 @@ if file != None:
         # show image.
         streamlit.pyplot()
 
+	# log event.
+        time_utc = time.time()
+        if ebay_url in ["", None]:
+            upload_fmt = "file"
+        else:
+            upload_fmt = "ebay"
+        
+        sql = "insert into event (time_utc, upload_format, ebay_url, grade_assigned) values ({}, '{}', '{}', '{}');".format(time_utc, upload_fmt, ebay_url, ypred)
+        print(sql)
+        cursor.execute(sql)
+
     except Exception as e:
         print(e) # for logging.
         error_md = """
@@ -378,5 +412,11 @@ if file != None:
         """
         streamlit.markdown(e)
 
+	# Log error.
+        time_utc = time.time()
+        stack_trace = str(e)
+        sql = "insert into error (time_utc, stack_trace) values ({}, '{}');".format(time_utc, stack_trace)
+        print(sql)
+        cursor.execute(sql)
 
 
