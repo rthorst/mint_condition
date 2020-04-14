@@ -188,21 +188,20 @@ def predict(model, img_p):
 
 """
 Get 100 most recent cards listed as ungraded.
+TODO: stopped here, API call is not working.
 """
 
-# connect to ebay API.
-# TODO make credentials text file.
+# Load ebay API credentials.
 credentials_p = "ebay_sdk_credentials.txt"
 f = open(credentials_p, "r")
-client_id, dev_id, client_secret = [l.strip("\n") for l in f.readlines()]
-api = Connection(appid=client_id, config_file=None)
+client_id, dev_id, client_secret = [l.rstrip("\n").lstrip() for l in f.readlines()]
 
-# retrieve a page.
 # TODO limit to ungraded cards.
 params = {
     "categoryName" : "Baseball Cards",
     "paginationInput" : 
         {
+            "keywords" : "psa", # TODO remove me.
             "entriesPerPage" : 100,
             "pageNumber" : 1
         },

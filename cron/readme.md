@@ -1,5 +1,7 @@
 #Cron
 
+STATUS: stopped line 190 in cron.py. The API call is not working.
+
 This directory is a work-in-progress exercise in automation.
 
 The high-level goal is to run a nightly "arbitrage" report which scrapes a random number of ungraded cards from ebay, grades them, and logs the cards.
