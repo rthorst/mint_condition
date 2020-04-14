@@ -1,0 +1,13 @@
+works:
+https%3A//images.psacard.com/s3/cu-psa/psacard/images/photograde/gretzky18_9xl.jpg
+
+
+doesn't work:
+https://2rhehmesf4.execute-api.us-east-1.amazonaws.com/api/grade_url/https%3A//images.psacard.com/s3/cu-psa/psacard/images/photograde/gretzky18_9xl.jpg
+
+tutorial:
+chalice deploy
+chalice delete (if needed)
+https://aws.amazon.com/blogs/developer/build-and-deploy-a-serverless-rest-api-in-minutes-using-chalice/
+
+
