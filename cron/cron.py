@@ -21,9 +21,9 @@ If the table does not exist, create it.
 """
 
 # Connect to SQL database, for logging.
-# This will create the database file if it does not exist.
-log_p = "cron.db"
-conn = sqlite3.connect(log_p)
+# This will create the database file if it does not exist
+db_p = "cron.db"
+conn = sqlite3.connect(db_p)
 cursor = conn.cursor()
 
 # If the table does not already exist, create the cron table.
@@ -188,88 +188,78 @@ def predict(model, img_p):
 
 """
 Get 100 most recent cards listed as ungraded.
-TODO: stopped here, API call is not working.
 """
 
-# Load ebay API credentials.
-credentials_p = "ebay_sdk_credentials.txt"
-f = open(credentials_p, "r")
-client_id, dev_id, client_secret = [l.rstrip("\n").lstrip() for l in f.readlines()]
+model = preload_ml_model()
 
-# TODO limit to ungraded cards.
-params = {
-    "categoryName" : "Baseball Cards",
-    "paginationInput" : 
-        {
-            "keywords" : "psa", # TODO remove me.
-            "entriesPerPage" : 100,
-            "pageNumber" : 1
-        },
-    "outputSelector" : "PictureURLLarge"
-}
-response = api.execute("findItemsAdvanced", params)
-j = response.json()
+# Get HTML of the ebay page listing all 100 most recent ungraded cards.
+base_url = "https://www.ebay.com/b/Ungraded-Single-Baseball-Cards/213/bn_16986411?rt=nc&_sop=10"
+html = requests.get(base_url).text
 
-# grade each card.
-items = j["searchResult"]["item"] # json[] length 100
-for idx, item in enumerate(items):
+# Extract links to pages for each individual trading card.
+soup = bs4.BeautifulSoup(html)
+attrs = {"class" : "s-item__link"}
+auction_links = soup.findAll("a", attrs)
+auction_links = [link["href"] for link in auction_links]
+
+# Parse each individual trading card.
+for idx, auction_url in enumerate(auction_links):
 
     try:
 
-        # Get picture url.
-        url = item["pictureURLLarge"]
+        # Get HTML for this auction.
+        auction_html = requests.get(auction_url).text
+        soup = bs4.BeautifulSoup(auction_html)
 
-        # Download image.
-        res = requests.get(url).content
+        # extract card price.
+        attrs = {"id" : "prcIsum"}
+        price_span = soup.findAll("span", attrs)[0]
+        price = float(price_span["content"])
 
-        # TODO extract price from auction and modify below to 
-        # use a real price.
+        # extract card title
+        # we extract it directly from the url .../itm/{title}/...i
+        card_title = auction_url.split("/itm/")[1].split("/")[0]
+        print(card_title)
 
-        # TODO extract card title.
+        # save current in UTC
+        access_date_utc = datetime.datetime.now().timestamp()
 
-        # Grade card.
-        ypred_int, ypred_str, confidence = model.predict(res)
+        # Extract URL of the picture of the card.
+        url_pat = re.compile(r"bigImage.src\s{0,2}=\s{0,2}'\S+;")
+        mat = re.findall(pattern=url_pat, string=auction_html)[0]
+        img_url = mat.split("'")[1]
 
-        # Log grade.
-        time_utc = datetime.datetime.now().timestamp()
-        price = 0
-        card_title = ""
-        insert_row_sql = """
-        insert into cron (url, grade, title, price, access_date_utc, confidence)
-        values '{}', {}, '{}', {}, {}, {}
-        """.format(url, ypred_int, card_title, price, time_utc, confidence)
+        # Download card picture.
+        print("download {}".format(img_url))
+        img_bytes = requests.get(img_url).content
+        f = BytesIO(img_bytes)
+
+        # Grade picture.
+        ypred_int, ypred_str, confidence = predict(model, f)
+
+        # Write SQL.
+        sql_insert_statement = """
+        insert into cron 
+        (url, grade, title, price, confidence, access_date_utc)
         
-        cursor.execute(insert_row_sql)
-
-        # Sleep 0.25 seconds to be nice.
-        time.sleep(0.25)
-
-
+        values
+        ( '{}', {}, '{}', {}, {}, {} );
+        """.format(
+            auction_url,
+            ypred_int,
+            card_title,
+            price,
+            confidence,
+            access_date_utc
+        )
+        cursor.execute(sql_insert_statement)
 
     except Exception as e:
         print(e)
 
+    # sleep (to be nice) regardless of success or failure.
+    import time
+    time.sleep(.25)
 
-
-"""
-
-# Preload ML model.
-model = preload_ml_model()
-html = requests.get(ebay_url).text
-
-
-# get image url.
-url_pat = re.compile(r"bigImage.src ='\S+s-1300.jpg")
-url_pat = re.compile(r"bigImage.src\s{0,2}=\s{0,2}'\S+;")
-mat = re.findall(pattern=url_pat, string=html)[0]
-print(mat)
-img_url = mat.split("'")[1]
-
-# download image.
-print("download {}".format(img_url))
-img_bytes = requests.get(img_url).content
-file = BytesIO(img_bytes)
-
-ypred_int, ypred_str, confidence = predict(model, file)
-
-"""
+# commit changes.
+conn.commit()
