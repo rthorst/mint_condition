@@ -401,6 +401,7 @@ if file != None:
         sql = "insert into event (time_utc, upload_format, ebay_url, grade_assigned) values ({}, '{}', '{}', '{}');".format(time_utc, upload_fmt, ebay_url, ypred)
         print(sql)
         cursor.execute(sql)
+        conn.commit() 
 
     except Exception as e:
         print(e) # for logging.
@@ -418,6 +419,6 @@ if file != None:
         sql = "insert into error (time_utc, stack_trace) values ({}, '{}');".format(time_utc, stack_trace)
         print(sql)
         cursor.execute(sql)
-
+        conn.commit()
 
 
